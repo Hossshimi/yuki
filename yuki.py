@@ -9,7 +9,7 @@ import func
 
 
 
-VERSION = "yuki v0.2.1"
+VERSION = "yuki v0.3.0"
 
 
 
@@ -35,6 +35,9 @@ img_flag = False
 
 def exec(command,data,in_data=None): # command実行時の例外をキャッチ
     try:
+        #if in_data and (len(command) > 1):
+            #for i,c in enumerate(command):
+                #FUNCLIST[command[c]](data,in_data) + FUNCLIST[command]
         if in_data:
             return FUNCLIST[command[0]](data,in_data)
         else:
@@ -57,16 +60,38 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         text = "say 内容が・・・無いよう！ｗ"
     if text[0] == " ":
         text = text[1:]
-    spltext = text.split(" | ")
+    #spltext = text.split(" | ")
+    #splspl = []
+    #for i,s in spltext:
+        #spltext[i] = s.split(" + ")
+    spltext = []
+    joints = []
+    for s in re.findall(r"( \| )|( \+ )",text):
+        tmp = []
+        for tmp_ in s:
+            if tmp_ != "":
+                tmp.append(tmp_)
+        sp = text.split(tmp[0],maxsplit=1)
+        spltext.append(sp[0])
+        text = sp[1]
+        if len(s) > 1:
+            if tmp[0] == " | ":
+                joints.append("p")
+            else:
+                joints.append("a")
+    spltext.append(text)
+    #if spltext == []:
+        #spltext.append(text)
     commands = []
     data = []
     for part in spltext:
-        commands.append(part.split(" ",maxsplit=1)[0])
+        sp = part.split(maxsplit=1)
+        commands.append(sp[0])
         try:
-            data.append(part.split(" ",maxsplit=1)[1])
+            data.append(sp[1])
         except:
             data.append(None)
-    return commands,data
+    return commands,data,joints
 
 
 
@@ -97,13 +122,19 @@ class MastodonStreamListener(StreamListener):
                         if i == 0: # 1つめのcommandの処理なら
                             tmp = exec([shaped[0][0]],shaped[1][0])
                         elif i+1 != commands_count: # 2回目以降かつ次のcommandがまだ残っているなら
-                            if shaped[0][i-1] == "rand":
-                                tmp = tmp[:-10]
-                            tmp = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                            if shaped[2][i-1] == "p": # commandが|で繋がれているなら
+                                tmp = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                            elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
+                                tmp = tmp + exec([shaped[0][i]],shaped[1][i])
+                            elif shaped[2][i-1] == "a": # +で繋がれ,argがないなら
+                                tmp = tmp + exec([shaped[0][i]],shaped[1][i],in_data=tmp)
                         else: # 最後のcommandの処理なら
-                            if shaped[0][i-1] == "rand":
-                                tmp = tmp[:-10]
-                            result = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                            if shaped[2][i-1] == "p": # commandが|で繋がれているなら
+                                result = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                            elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
+                                result = tmp + exec([shaped[0][i]],shaped[1][i])
+                            elif shaped[2][i-1]: # +で繋がれ,argがないなら
+                                result = tmp + exec([shaped[0][i]],shaped[1][i],in_data=tmp)
                             if shaped[0][i] == "textimg":
                                 img_flag = True
                     else: # commandが1つなら

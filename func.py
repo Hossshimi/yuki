@@ -64,9 +64,9 @@ def rand(text,in_data=None):
         elif len(mode) > 1:
             modeopt = mode[1] 
             result = random.choices(ulist,k=int(modeopt))
-            result = ", ".join(result) + " がいいと思います！"
+            result = ", ".join(result)# + " がいいと思います！"
         else:
-            result = random.choice(ulist) + " がいいと思います！"
+            result = random.choice(ulist)# + " がいいと思います！"
     
     elif "s" in mode:
         if ulist==None: pass
@@ -77,7 +77,7 @@ def rand(text,in_data=None):
             result = "err:rand:選択数が多すぎます"
         else:
             result = random.sample(ulist,int(modeopt))
-            result = ", ".join(result) + " がいいと思います！"
+            result = ", ".join(result)# + " がいいと思います！"
 
     else: result = "err:rand;無効なmodeです"
     

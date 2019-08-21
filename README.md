@@ -32,6 +32,18 @@
 
 
 
+## command1の実行結果にcommand2の実行結果をつなげる
+
+```
+#yuki_kawaiuniv <command1> [-option1] args1 + <command2> [-option2] args2
+```
+
+`(space)+(space)` で `command` をつなぎます
+
+`result1result2` のようになります
+
+
+
 
 
 ------
