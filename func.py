@@ -73,10 +73,13 @@ def rand(text,in_data=None):
         elif len(mode) > 1:
             modeopt = mode[1]
         else: modeopt = 1
-        result = random.sample(ulist,int(modeopt))
-        result = ", ".join(result) + " がいいと思います！"
+        if len(ulist) < modeopt:
+            result = "err:rand:選択数が多すぎます"
+        else:
+            result = random.sample(ulist,int(modeopt))
+            result = ", ".join(result) + " がいいと思います！"
 
-    else: result = "err:無効なmode"
+    else: result = "err:rand;無効なmodeです"
     
     if ulist==None:
         result = "err:rand:選択肢の指定がありません"
