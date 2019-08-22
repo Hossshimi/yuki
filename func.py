@@ -3,6 +3,7 @@ import random
 import re
 import os
 from PIL import Image, ImageDraw, ImageFont
+import urllib.request
 
 
 FONTPATH = os.path.normpath(os.path.join(\
@@ -39,7 +40,8 @@ def rand(text,in_data=None):
         raw = in_data
     else:
         raw = text
-    
+    if in_data and re.findall(r"-..?",text):
+        raw = text + " " + raw
     if "-c" in raw:
         tmp = re.search(r"(-c\d+)",raw)
         if tmp:
@@ -64,7 +66,7 @@ def rand(text,in_data=None):
         elif len(mode) > 1:
             modeopt = mode[1] 
             result = random.choices(ulist,k=int(modeopt))
-            result = ", ".join(result)# + " がいいと思います！"
+            result = " ".join(result)# + " がいいと思います！"
         else:
             result = random.choice(ulist)# + " がいいと思います！"
     
@@ -77,7 +79,7 @@ def rand(text,in_data=None):
             result = "err:rand:選択数が多すぎます"
         else:
             result = random.sample(ulist,int(modeopt))
-            result = ", ".join(result)# + " がいいと思います！"
+            result = " ".join(result)# + " がいいと思います！"
 
     else: result = "err:rand;無効なmodeです"
     
@@ -85,3 +87,9 @@ def rand(text,in_data=None):
         result = "err:rand:選択肢の指定がありません"
     
     return result
+
+"""def mediaedit(text,url):
+    try:
+        with urllib.request.urlopen(url) as media:
+            data = media.read()
+            with open("img.png")"""

@@ -4,7 +4,6 @@ from html.parser import HTMLParser
 import os
 import re
 
-
 import func
 
 
