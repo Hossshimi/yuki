@@ -8,7 +8,7 @@ import func
 
 
 
-VERSION = "yuki v0.3.0"
+VERSION = "yuki v0.3.2"
 
 
 
@@ -107,7 +107,7 @@ class Parser(HTMLParser):
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
         if "yuki_kawaiuniv" in toot["content"]:
-            print(toot["content"])
+            #print(toot["content"])
             global mastodon,img_flag
 
             shaped = list(shaper(rawtext=toot["content"], type_="tag"))
@@ -115,6 +115,20 @@ class MastodonStreamListener(StreamListener):
 
             commands_count = len(shaped[0])
             result = None
+            
+            if shaped[0][0] == "imgedit":
+                try:
+                    url = toot["media_attachments"][0]["url"]
+                    res = func.imgedit(shaped[1][0],url)
+                    if res != 0:
+                        mastodon.status_post(status=res,in_reply_to_id=toot["id"])
+                    media = mastodon.media_post("img.png",mime_type="image/png")
+                    mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
+                                            media_ids=media,sensitive=True)
+                    return 0
+                except: 
+                    mastodon.status_post(status="画像取得に失敗しました...",in_reply_to_id=toot["id"])
+                    return 0
             for i in range(commands_count): # それぞれのcommandに対して
                 if shaped[0][i] in FUNCLIST:
                     if len(shaped[0]) > 1: # commandが複数なら
@@ -172,7 +186,7 @@ def main():
     mastodon = login()
 
     mastodon.status_post(status="@kawai ただいま！",visibility="direct")
-    # 起動時,開発者にDMを送信
+    # 起動時,開発にDMを送信
 
     mastodon.stream_user(MastodonStreamListener(),run_async=False)
     # Streaming APIに接続,タグ"yuki_kawaiuniv"付きのtootを拾う

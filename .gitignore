@@ -2,3 +2,5 @@ __pycache__/
 *.wav
 *.bat
 yuki_*.txt
+*.png
+.vscode/
