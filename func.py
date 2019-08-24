@@ -1,5 +1,5 @@
 #from mastodon import Mastodon
-import random
+import random as random_
 import re
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -15,21 +15,23 @@ FONTPATH = os.path.normpath(os.path.join(\
 FONTSIZE = 20
 COLOR = (255,255,255)
 
-def help(text,in_data=None):
+def help(*args):
     return "https://github.com/Hossshimi/yuki"
 
-def say(text,in_data=None):
+def say(data,option=None,in_data=None):
     if in_data:
         return in_data
-    elif text == None:
+    elif data == []:
         return "内容が・・・無いよう！ｗ"
     else:
-        return text
+        return " ".join(data)
 
-def textimg(text,in_data=None):
+def textimg(data,option=None,in_data=None):
     #global FONTPATH,FONTSIZE,COLOR
     if in_data:
         text = in_data
+    else:
+        text = " ".join(data)
     font = ImageFont.truetype(FONTPATH,FONTSIZE)
     width, height = font.getsize_multiline(text)
     bg_ = Image.new("RGB", (width+20,height+20), (0,0,0))
@@ -37,41 +39,26 @@ def textimg(text,in_data=None):
     bg.multiline_text((5,5), text, fill=COLOR, font=font)
     bg_.save("img.png")
 
-def rand(text,in_data=None):
+def rand_(text,option=None,in_data=None):
     mode = "c"
     if in_data:
         raw = in_data
     else:
         raw = text
-    if in_data and re.findall(r"-..?",text):
-        raw = text + " " + raw
-    if "-c" in raw:
-        tmp = re.search(r"(-c\d+)",raw)
-        if tmp:
-            re.sub(r"\s-c\d+","",raw)
-            mode = f"c{raw[2:3]}"
-        else:
-            raw.replace(" -c","")
-    elif "-s" in raw:
-        tmp = re.search(r"(-s\d+)",raw)
-        if tmp:
-            re.sub(r"\s-s\d+","",raw)
-            mode = f"s{raw[2:3]}"
-        else:
-            raw.replace(" -s","")
-            mode = "s"
-
-    ulist = raw.split()
-    ulist = ulist[1:]
-
+    if option:
+        mode = option[1:]
+    if type(raw) is list:
+        ulist = raw
+    else:
+        ulist = raw.split()
     if "c" in mode:
         if ulist==None: pass
         elif len(mode) > 1:
             modeopt = mode[1] 
-            result = random.choices(ulist,k=int(modeopt))
-            result = " ".join(result)# + " がいいと思います！"
+            result = random_.choices(ulist,k=int(modeopt))
+            result = "\n".join(result)# + " がいいと思います！"
         else:
-            result = random.choice(ulist)# + " がいいと思います！"
+            result = random_.choice(ulist)# + " がいいと思います！"
     
     elif "s" in mode:
         if ulist==None: pass
@@ -81,8 +68,8 @@ def rand(text,in_data=None):
         if len(ulist) < int(modeopt):
             result = "err:rand:選択数が多すぎます"
         else:
-            result = random.sample(ulist,int(modeopt))
-            result = " ".join(result)# + " がいいと思います！"
+            result = random_.sample(ulist,int(modeopt))
+            result = "\n".join(result)# + " がいいと思います！"
 
     else: result = "err:rand;無効なmodeです"
     

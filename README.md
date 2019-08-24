@@ -8,7 +8,7 @@
 #yuki_kawaiuniv <command> args
 ```
 
-`#yuki_kawaiuniv` の位置はどこでもいいです
+`#yuki_kawaiuniv` の位置は~~どこでもいいです~~ **最初につけてください**
 
 
 
@@ -50,7 +50,7 @@
 
 
 
-`textimg` 以外の全ての `command` は結果を**文字列で**返します
+`textimg` , ` imgedit` 以外の全ての `command` は結果を**文字列で**返します
 
 
 
@@ -106,7 +106,7 @@ version
 
 
 
-## 基本機能
+## 機能
 
 ### rand : 要素の中から選ぶ
 
@@ -121,17 +121,19 @@ rand [-option] arg1 arg2 [arg3 ...]
 
 `num` は1~9までしか対応していないので注意
 
+1つの要素は**途中で改行せずに**書いてください
+
 
 
 ### imgedit : 画像処理
 
 ```
 imgedit [-option]
-			-noise			: 画像にノイズをかける(デフォルト動作)
-			-gray			: 画像をグレースケール化
-			-inv			: ネガポジ反転
-			-mosaic[level]	: モザイクをかける 1<level<10
-			-r/-g/-b		: R/G/Bに単色化
+		-noise			: 画像にノイズをかける(デフォルト動作)
+		-gray			: 画像をグレースケール化
+		-inv			: ネガポジ反転
+		-mosaic[level]	: モザイクをかける 1<level<10
+		-r/-g/-b		: R/G/Bに単色化
 ```
 
 画像を添付してtootすると、処理して返信します

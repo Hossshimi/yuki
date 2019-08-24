@@ -3,12 +3,13 @@ from mastodon import StreamListener
 from html.parser import HTMLParser
 import os
 import re
+import shlex
 
 import func
 
 
 
-VERSION = "yuki v0.3.2"
+VERSION = "yuki v0.4.0"
 
 
 
@@ -23,7 +24,7 @@ FUNCLIST = {
     "version":version,
     "say":func.say,
     "textimg":func.textimg,
-    "rand":func.rand,
+    "rand":func.rand_,
 
 }
 
@@ -32,15 +33,15 @@ img_flag = False
 
 
 
-def exec(command,data,in_data=None): # command実行時の例外をキャッチ
+def exec(command,data,option,in_data=None): # command実行時の例外をキャッチ
     try:
         #if in_data and (len(command) > 1):
             #for i,c in enumerate(command):
                 #FUNCLIST[command[c]](data,in_data) + FUNCLIST[command]
         if in_data:
-            return FUNCLIST[command[0]](data,in_data)
+            return FUNCLIST[command[0]](data,option,in_data)
         else:
-            return FUNCLIST[command[0]](data)
+            return FUNCLIST[command[0]](data,option)
     except:
         return "err:main:something_went_wrong!"
 
@@ -54,7 +55,7 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         parser = Parser()
         parser.feed(rawtext)
         parser.close()
-        text = parser.parsed.replace("#yuki_kawaiuniv","")
+        text = parser.parsed.replace("#yuki_kawaiuniv","",1)
     if text == "":
         text = "say 内容が・・・無いよう！ｗ"
     if text[0] == " ":
@@ -65,32 +66,47 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         #spltext[i] = s.split(" + ")
     spltext = []
     joints = []
-    for s in re.findall(r"( \| )|( \+ )",text):
-        tmp = []
-        for tmp_ in s:
-            if tmp_ != "":
-                tmp.append(tmp_)
-        sp = text.split(tmp[0],maxsplit=1)
-        spltext.append(sp[0])
-        text = sp[1]
-        if len(s) > 1:
-            if tmp[0] == " | ":
-                joints.append("p")
-            else:
-                joints.append("a")
-    spltext.append(text)
-    #if spltext == []:
-        #spltext.append(text)
+    try:
+        spl0 = shlex.split(text)
+    except:
+        spl0 = ["say","err:main:不正な記法です"]
+    p_index = 999
+    a_index = 999
+    for _ in range(spl0.count("|")+spl0.count("+")+1):
+        if "|" in spl0:
+            p_index = spl0.index("|")
+        if "+" in spl0:
+            a_index = spl0.index("+")
+        if p_index < a_index:
+            joints.append("p")
+            spltext.append(spl0[:p_index])
+            spl0 = spl0[p_index+1:]
+        elif p_index > a_index:
+            joints.append("a")
+            spltext.append(spl0[:a_index])
+            spl0 = spl0[a_index+1:]
+    if spltext == []:
+        spltext.append(spl0)
     commands = []
     data = []
+    options = []
+    o_flag = False
     for part in spltext:
-        sp = part.split(maxsplit=1)
-        commands.append(sp[0])
+        #sp = part.split(maxsplit=1)
+        commands.append(part[0])
+        for part_ in part:
+            if part_.startswith("-") and len(part_.split()) == 1:
+                options.append(part_)
+                part.remove(part_)
+                o_flag = True
+        if not o_flag:
+            options.append(None)
+        o_flag = False
         try:
-            data.append(sp[1])
+            data.append(part[1:])
         except:
             data.append(None)
-    return commands,data,joints
+    return commands,data,joints,options
 
 
 
@@ -102,11 +118,18 @@ class Parser(HTMLParser):
     def handle_data(self,data):
         self.parsed += data
 
+    def handle_endtag(self,tag):
+        if tag == "p":
+            self.parsed += "\n\n"
+
+    def handle_startendtag(self,tag,attrs):
+        self.parsed += "\n"
+
 
 
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
-        if "yuki_kawaiuniv" in toot["content"]:
+        if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="yuki"):
             #print(toot["content"])
             global mastodon,img_flag
 
@@ -119,7 +142,7 @@ class MastodonStreamListener(StreamListener):
             if shaped[0][0] == "imgedit":
                 try:
                     url = toot["media_attachments"][0]["url"]
-                    res = func.imgedit(shaped[1][0],url)
+                    res = func.imgedit(shaped[3][0],url)
                     if res != 0:
                         mastodon.status_post(status=res,in_reply_to_id=toot["id"])
                     media = mastodon.media_post("img.png",mime_type="image/png")
@@ -133,25 +156,25 @@ class MastodonStreamListener(StreamListener):
                 if shaped[0][i] in FUNCLIST:
                     if len(shaped[0]) > 1: # commandが複数なら
                         if i == 0: # 1つめのcommandの処理なら
-                            tmp = exec([shaped[0][0]],shaped[1][0])
+                            tmp = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
                         elif i+1 != commands_count: # 2回目以降かつ次のcommandがまだ残っているなら
                             if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                tmp = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                                tmp = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                             elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
-                                tmp = tmp + exec([shaped[0][i]],shaped[1][i])
+                                tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
                             elif shaped[2][i-1] == "a": # +で繋がれ,argがないなら
-                                tmp = tmp + exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                                tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                         else: # 最後のcommandの処理なら
                             if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                result = exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                                result = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                             elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
-                                result = tmp + exec([shaped[0][i]],shaped[1][i])
+                                result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
                             elif shaped[2][i-1]: # +で繋がれ,argがないなら
-                                result = tmp + exec([shaped[0][i]],shaped[1][i],in_data=tmp)
+                                result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                             if shaped[0][i] == "textimg":
                                 img_flag = True
                     else: # commandが1つなら
-                        result = exec([shaped[0][0]],shaped[1][0])
+                        result = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
                         if shaped[0][i] == "textimg":
                             img_flag = True
                 else: # FUNCLISTに指定されたcommandが含まれていないなら
