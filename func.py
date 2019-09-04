@@ -10,7 +10,7 @@ from numpy.random import *
 import cv2
 
 FONTPATH = os.path.normpath(os.path.join(\
-    os.path.abspath(os.path.dirname(__file__)),"VL-Gothic-Regular.ttf"))
+    os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
 #print(FONTPATH)
 FONTSIZE = 20
 COLOR = (255,255,255)
@@ -146,3 +146,11 @@ def imgedit(text,url):
         return "err:imgedit:無効なoption"
     return 0
     
+def drum(data,option=None,in_data=None):
+    if in_data:
+        text = "【" + in_data + "】"
+    elif data == []:
+        text = "【歩くドラム缶の恐怖】"
+    else:
+        text = "【" + " ".join(data) + "】"
+    return text + "\n\n　　　 　}二二{\n　　　 　}二二{\n　　 　　}二二{\n  　  　　  /   ／⌒)\n　　　　| ／ /　/\n　　　　ヽ_｜ /\n　　　　  / ｜｜\n　　　　/　(＿＼\n　　　／ ／　 ﾋﾉ\n　　  / ／\n　　`( ｜\n　  　L/"

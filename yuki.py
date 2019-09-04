@@ -9,7 +9,7 @@ import func
 
 
 
-VERSION = "yuki v0.4.0"
+VERSION = "yuki v0.4.1"
 
 
 
@@ -25,7 +25,7 @@ FUNCLIST = {
     "say":func.say,
     "textimg":func.textimg,
     "rand":func.rand_,
-
+    "drum":func.drum
 }
 
 mastodon = None
