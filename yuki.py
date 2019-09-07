@@ -4,12 +4,16 @@ from html.parser import HTMLParser
 import os
 import re
 import shlex
+import asyncio
+import schedule
+import wikipedia
+import datetime,pytz
 
 import func
 
 
 
-VERSION = "yuki v0.4.1"
+VERSION = "yuki v0.4.2"
 
 
 
@@ -32,6 +36,21 @@ mastodon = None
 img_flag = False
 
 
+
+def anniv():
+    wikipedia.set_lang("ja")
+    t = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    m = t.month
+    d = t.day
+    raw = wikipedia.page(f"{m}月{d}日").content
+    list = raw[raw.find("== 記念日")+16:raw.find("\n\n\n== 誕生花")].split("\n")
+    text = ""
+    for i,part in enumerate(list):
+        if i%2 == 0:
+            text += ( "<" + part + "> : " )
+        else:
+            text += ( part + "\n" )
+    mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}になりました！")
 
 def exec(command,data,option,in_data=None): # command実行時の例外をキャッチ
     try:
@@ -189,7 +208,8 @@ class MastodonStreamListener(StreamListener):
                 mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
                                         media_ids=media)
                 img_flag = False
-    #def handle_heartbeat(self): pass
+    def handle_heartbeat(self): # every 15s
+        schedule.run_pending()
 
 
 
@@ -206,12 +226,14 @@ def login():
 
 def main():
     global mastodon
-    mastodon = login()
 
+    schedule.every().day.at("15:05").do(anniv)
+
+    mastodon = login()
     mastodon.status_post(status="@kawai ただいま！",visibility="direct")
     # 起動時,開発にDMを送信
 
-    mastodon.stream_user(MastodonStreamListener(),run_async=False)
+    mastodon.stream_user(MastodonStreamListener(),run_async=False,reconnect_async=False)
     # Streaming APIに接続,タグ"yuki_kawaiuniv"付きのtootを拾う
     #mastodon.stream_hashtag("yuki_kawaiuniv",MastodonStreamListener(),run_async=False)
     

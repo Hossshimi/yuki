@@ -15,6 +15,8 @@ FONTPATH = os.path.normpath(os.path.join(\
 FONTSIZE = 20
 COLOR = (255,255,255)
 
+
+# commands =============================================================
 def help(*args):
     return "https://github.com/Hossshimi/yuki"
 
@@ -154,3 +156,5 @@ def drum(data,option=None,in_data=None):
     else:
         text = "【" + " ".join(data) + "】"
     return text + "\n\n　　　 　}二二{\n　　　 　}二二{\n　　 　　}二二{\n  　  　　  /   ／⌒)\n　　　　| ／ /　/\n　　　　ヽ_｜ /\n　　　　  / ｜｜\n　　　　/　(＿＼\n　　　／ ／　 ﾋﾉ\n　　  / ／\n　　`( ｜\n　  　L/"
+
+
