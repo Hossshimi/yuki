@@ -40,6 +40,7 @@ def textimg(data,option=None,in_data=None):
     bg = ImageDraw.Draw(bg_)
     bg.multiline_text((5,5), text, fill=COLOR, font=font)
     bg_.save("img.png")
+    return 0
 
 def rand_(text,option=None,in_data=None):
     mode = "c"

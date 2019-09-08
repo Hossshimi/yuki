@@ -7,13 +7,13 @@ import shlex
 import asyncio
 import schedule
 import wikipedia
-import datetime,pytz
+import datetime
 
 import func
 
 
 
-VERSION = "yuki v0.4.2"
+VERSION = "yuki v0.4.3"
 
 
 
@@ -43,13 +43,20 @@ def anniv():
     m = t.month
     d = t.day
     raw = wikipedia.page(f"{m}月{d}日").content
-    list = raw[raw.find("== 記念日")+16:raw.find("\n\n\n== 誕生花")].split("\n")
+    tmp = raw[raw.find("== 記念日")+16:]
+    list = tmp[:tmp.find("\n\n\n==")].split("\n")
     text = ""
     for i,part in enumerate(list):
         if i%2 == 0:
-            text += ( "<" + part + "> : " )
+            if (len(text)+len(part)) < 501:
+                text += ( "<" + part + "> : " )
+            else:
+                break
         else:
-            text += ( part + "\n" )
+            if (len(text)+len(part)) < 501:
+                text += ( part + "\n" )
+            else:
+                break
     mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}になりました！")
 
 def exec(command,data,option,in_data=None): # command実行時の例外をキャッチ
@@ -94,8 +101,12 @@ def shaper(rawtext,type_): # トゥートを整形する関数
     for _ in range(spl0.count("|")+spl0.count("+")+1):
         if "|" in spl0:
             p_index = spl0.index("|")
+        else:
+            p_index = 999
         if "+" in spl0:
             a_index = spl0.index("+")
+        else:
+            a_index = 999
         if p_index < a_index:
             joints.append("p")
             spltext.append(spl0[:p_index])
@@ -104,7 +115,10 @@ def shaper(rawtext,type_): # トゥートを整形する関数
             joints.append("a")
             spltext.append(spl0[:a_index])
             spl0 = spl0[a_index+1:]
-    if spltext == []:
+        elif p_index == a_index:
+            spltext.append(spl0)
+    if [] in spltext:
+        spltext.remove([])
         spltext.append(spl0)
     commands = []
     data = []
@@ -202,11 +216,14 @@ class MastodonStreamListener(StreamListener):
                 if result == None:
                     mastodon.status_post(status="何か御用でしょうか？",in_reply_to_id=toot["id"])
                 else:
-                    mastodon.status_post(status=result,in_reply_to_id=toot["id"])
+                    if len(result) < 501:
+                        mastodon.status_post(status=result,in_reply_to_id=toot["id"],spoiler_text="result")
+                    else:
+                        mastodon.status_post(status="結果が500文字を超えています",in_reply_to_id=toot["id"])
             else: # 出力が画像の場合
                 media = mastodon.media_post("img.png",mime_type="image/png")
                 mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
-                                        media_ids=media)
+                                        media_ids=media,sensitive=True)
                 img_flag = False
     def handle_heartbeat(self): # every 15s
         schedule.run_pending()
