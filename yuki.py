@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.4.3"
+VERSION = "yuki v0.4.4"
 
 
 
@@ -166,7 +166,7 @@ class MastodonStreamListener(StreamListener):
             #print(toot["content"])
             global mastodon,img_flag
 
-            shaped = list(shaper(rawtext=toot["content"], type_="tag"))
+            shaped = shaper(rawtext=toot["content"], type_="tag")
             # toot内容を整形関数に渡す
 
             commands_count = len(shaped[0])
@@ -244,7 +244,7 @@ def login():
 def main():
     global mastodon
 
-    schedule.every().day.at("15:05").do(anniv)
+    schedule.every().day.at("15:02").do(anniv)
 
     mastodon = login()
     mastodon.status_post(status="@kawai ただいま！",visibility="direct")
