@@ -81,62 +81,73 @@ def rand_(text,option=None,in_data=None):
     
     return result
 
-def imgedit(text,url):
-    mode = "noise"    
+def imgedit(text,in_data):
+    mode = "n"    
     if text != None:
         mode = text[1:]
-    try:
-        with urllib.request.urlopen(url) as media:
-            data = media.read()
-            with open("img.png","wb") as f:
-                f.write(data)
-    except:
-        return "image downroad error!"
+    if in_data != "internal":
+        try:
+            with urllib.request.urlopen(in_data) as media:
+                data = media.read()
+                with open("img.png","wb") as f:
+                    f.write(data)
+        except:
+            return "image downroad error!"
     img = Image.open("img.png").convert("RGB")
     img_array = numpy.array(img)
-    #result = Image.fromarray(img_array)
-    #result.save("img__.png")
-    #numpy.set_printoptions(threshold=4001)
-    #print(img_array)
-    if mode == "noise":
-        #if len(img_array.shape) == 2:
-            #grayflag = True
+    if mode == "n":
+        img_array = img_array.astype("int16")
         for i in range(img_array.shape[0]):
             for j in range(img_array.shape[1]):
                 flag = randint(100)
-                #if flag > 70 and grayflag:
-                    #noiz = randint(0,255)
-                    #img_array[i,j] = noiz
                 if flag > 80:
-                    noiz = randint(0,255,3)
-                    img_array[i,j] = noiz#[0]
-                    #img_array[i,j,1] = noiz[1]
-                    #img_array[i,j,2] = noiz[2]
-        result = Image.fromarray(img_array)
+                    noizdiff = (randn(3)*40).astype("int16")
+                    img_array[i][j] += noizdiff
+                    """rgb = img_array[i,j].astype("float")
+                    if rgb[0]+noizdiff[0] > 255:
+                        img_array[i,j,0] = numpy.array([255])
+                    elif rgb[0]+noizdiff[0] <0:
+                        img_array[i,j,0] = numpy.array([0])
+                    else:
+                        img_array[i,j,0] += noizdiff[0]
+                    if rgb[1]+noizdiff[1] > 255:
+                        img_array[i,j,1] = numpy.array([255])
+                    elif rgb[1]+noizdiff[1] <0:
+                        img_array[i,j,1] = numpy.array([0])
+                    else:
+                        img_array[i,j,1] += noizdiff[1]
+                    if rgb[2]+noizdiff[2] > 255:
+                        img_array[i,j,2] = numpy.array([255])
+                    elif rgb[2]+noizdiff[2] <0:
+                        img_array[i,j,2] = numpy.array([0])
+                    else:
+                        img_array[i,j,2] += noizdiff[2]"""
+        img_array = img_array.clip(0,255).astype("uint8")
+        result = Image.fromarray(img_array.astype("uint8"))
         result.save("img.png")
-    elif mode == "r":
+    elif mode == "R":
         img_array[:,:,(1,2)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "g":
+    elif mode == "G":
         img_array[:,:,(0,2)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "b":
+    elif mode == "B":
         img_array[:,:,(0,1)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "gray":
+    elif mode == "g":
         grey = 0.299 * img_array[:, :, 0] + 0.587 * img_array[:, :, 1]\
              + 0.114 * img_array[:, :, 2]
         result = Image.fromarray(numpy.uint8(grey))
         result.save("img.png")
-    elif mode == "inv":
+    elif mode == "i":
         result = 255 - img_array
         result = Image.fromarray(result)
         result.save("img.png")
-    elif "mosaic" in mode:
-        level = float(mode[6:])
+    elif "m" in mode:
+        level = float(mode[1:])
         if level >= 10: return "err:imgedit:無効なlevel"
         ratio = 1 - 0.1*level
         img = cv2.imread("img.png")

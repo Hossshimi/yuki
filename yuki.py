@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.4.4"
+VERSION = "yuki v0.4.6"
 
 
 
@@ -29,7 +29,8 @@ FUNCLIST = {
     "say":func.say,
     "textimg":func.textimg,
     "rand":func.rand_,
-    "drum":func.drum
+    "drum":func.drum,
+    "imgedit":None
 }
 
 mastodon = None
@@ -171,45 +172,71 @@ class MastodonStreamListener(StreamListener):
 
             commands_count = len(shaped[0])
             result = None
+            imgerr = False
             
-            if shaped[0][0] == "imgedit":
-                try:
-                    url = toot["media_attachments"][0]["url"]
-                    res = func.imgedit(shaped[3][0],url)
-                    if res != 0:
-                        mastodon.status_post(status=res,in_reply_to_id=toot["id"])
-                    media = mastodon.media_post("img.png",mime_type="image/png")
-                    mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
-                                            media_ids=media,sensitive=True)
-                    return 0
-                except: 
-                    mastodon.status_post(status="画像取得に失敗しました...",in_reply_to_id=toot["id"])
-                    return 0
             for i in range(commands_count): # それぞれのcommandに対して
                 if shaped[0][i] in FUNCLIST:
                     if len(shaped[0]) > 1: # commandが複数なら
                         if i == 0: # 1つめのcommandの処理なら
-                            tmp = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
-                        elif i+1 != commands_count: # 2回目以降かつ次のcommandがまだ残っているなら
+                            if shaped[0][0] == "imgedit":
+                                img_flag = True
+                                url = toot["media_attachments"][0]["url"]
+                                res = func.imgedit(shaped[3][0],url)
+                                if res != 0:
+                                    imgerr = True
+                                    break
+                                #media = mastodon.media_post("img.png",mime_type="image/png")
+                                #mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
+                                                        #media_ids=media,sensitive=True)
+                            else:
+                                if shaped[0][0] == "textimg":
+                                    img_flag = True
+                                tmp = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
+                        elif i+1 != commands_count: # 2回目以降かつ次のcommandがまだ残っているなら                                
                             if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                tmp = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
+                                if shaped[0][i] == "textimg":
+                                    img_flag = True
+                                if ((shaped[0][i-1] == "textimg") or (shaped[0][i-1] == "imgedit")) and (shaped[0][i] == "imgedit"):
+                                    res = func.imgedit(shaped[3][i],"internal")
+                                    if res != 0: 
+                                        imgerr = True
+                                        break
+                                else:
+                                    tmp = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                             elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
                                 tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
                             elif shaped[2][i-1] == "a": # +で繋がれ,argがないなら
                                 tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                         else: # 最後のcommandの処理なら
                             if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                result = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
+                                if ((shaped[0][i-1] == "textimg") or (shaped[0][i-1] == "imgedit")) and (shaped[0][i] == "imgedit"):
+                                    res = func.imgedit(shaped[3][i],"internal")
+                                    if res != 0: 
+                                        imgerr = True
+                                        break
+                                else:
+                                    result = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                             elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
                                 result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
                             elif shaped[2][i-1]: # +で繋がれ,argがないなら
                                 result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                            if shaped[0][i] == "textimg":
+                            if shaped[0][i] == ("textimg" or "imgedit"):
                                 img_flag = True
                     else: # commandが1つなら
-                        result = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
-                        if shaped[0][i] == "textimg":
+                        if shaped[0][0] == ("textimg" or "imgedit"):
                             img_flag = True
+                        if shaped[0][0] == "imgedit":
+                                img_flag = True
+                                url = toot["media_attachments"][0]["url"]
+                                res = func.imgedit(shaped[3][0],url)
+                                if res != 0:
+                                    imgerr = True
+                                    break
+                                #media = mastodon.media_post("img.png",mime_type="image/png")
+                                #mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
+                                                        #media_ids=media,sensitive=True)
+                        else:
+                            result = exec([shaped[0][0]],shaped[1][0],shaped[3][0])
                 else: # FUNCLISTに指定されたcommandが含まれていないなら
                     result = "err:main:指定されたコマンドは見つかりませんでした..."
             if not img_flag: # 出力が文字列の場合
@@ -221,6 +248,8 @@ class MastodonStreamListener(StreamListener):
                     else:
                         mastodon.status_post(status="結果が500文字を超えています",in_reply_to_id=toot["id"])
             else: # 出力が画像の場合
+                if imgerr:
+                    mastodon.status_post(status="画像処理のエラーが発生しました...",in_reply_to_id=toot["id"])
                 media = mastodon.media_post("img.png",mime_type="image/png")
                 mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
                                         media_ids=media,sensitive=True)
