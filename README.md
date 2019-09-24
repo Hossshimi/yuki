@@ -20,6 +20,8 @@
 
 `-option` の位置は `args` の前にしてください
 
+複数のオプション(たとえば `-a` と `-B`)を同時に指定したい場合は、 `-aB` のように書いてください(**2度目以降のオプション記述は引数として扱われてしまいます！**)
+
 
 
 ## command1の実行結果をcommand2に渡す
@@ -116,9 +118,13 @@ version
 ```
 rand [-option] arg1 arg2 [arg3 ...]
 
-		-c 		: choice. argsから1つ選ぶ(デフォルト動作)
-		-c[num]	: choices. argsから複数選ぶ(同じ要素が複数出る点に注意)
-		-s[num]	: sample. argsから複数選ぶ(同じ要素が重複しない点に注意)
+		-C		: Character by character, 引数の文字列を1字ずつに分割して引数とする
+		-c 		: choice, argsから1つ選ぶ(デフォルト動作)
+		-c[num]	: choices, argsから複数選ぶ(同じ要素が複数出る点に注意)
+		-s[num]	: sample, argsから複数選ぶ(同じ要素が重複しない点に注意)
+		-L		: Line feed, 結果を改行で結合(デフォルト動作)
+		-S		: Spaced, 結果を空白で結合
+		-D		: Delete space, 結果を間隔なしで結合
 		
 ```
 

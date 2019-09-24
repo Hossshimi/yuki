@@ -50,29 +50,47 @@ def rand_(text,option=None,in_data=None):
         raw = text
     if option:
         mode = option[1:]
-    if type(raw) is list:
+    if ("C" in mode) and (type(raw) is str):
+        ulist =list(raw)
+    elif "C" in mode:
+        ulist = list(" ".join(raw))
+    elif type(raw) is list:
         ulist = raw
     else:
         ulist = raw.split()
     if "c" in mode:
         if ulist==None: pass
         elif len(mode) > 1:
-            modeopt = mode[1] 
+            modeopt = mode[mode.index("c")+1] 
             result = random_.choices(ulist,k=int(modeopt))
-            result = "\n".join(result)# + " がいいと思います！"
+            if "L" in mode:
+                result = "\n".join(result)
+            elif "S" in mode:
+                result = " ".join(result)
+            elif "D" in mode:
+                result = "".join(result)
+            else:
+                result = "\n".join(result)
         else:
-            result = random_.choice(ulist)# + " がいいと思います！"
+            result = random_.choice(ulist)
     
     elif "s" in mode:
         if ulist==None: pass
         elif len(mode) > 1:
-            modeopt = mode[1]
+            modeopt = mode[mode.index("s")+1]
         else: modeopt = 1
         if len(ulist) < int(modeopt):
             result = "err:rand:選択数が多すぎます"
         else:
             result = random_.sample(ulist,int(modeopt))
-            result = "\n".join(result)# + " がいいと思います！"
+            if "L" in mode:
+                result = "\n".join(result)
+            elif "S" in mode:
+                result = " ".join(result)
+            elif "D" in mode:
+                result = "".join(result)
+            else:
+                result = "\n".join(result)
 
     else: result = "err:rand;無効なmodeです"
     
