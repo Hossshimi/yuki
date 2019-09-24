@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.4.7"
+VERSION = "yuki v0.4.7.1"
 
 
 

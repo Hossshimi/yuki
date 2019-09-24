@@ -58,23 +58,8 @@ def rand_(text,option=None,in_data=None):
         ulist = raw
     else:
         ulist = raw.split()
-    if "c" in mode:
-        if ulist==None: pass
-        elif len(mode) > 1:
-            modeopt = mode[mode.index("c")+1] 
-            result = random_.choices(ulist,k=int(modeopt))
-            if "L" in mode:
-                result = "\n".join(result)
-            elif "S" in mode:
-                result = " ".join(result)
-            elif "D" in mode:
-                result = "".join(result)
-            else:
-                result = "\n".join(result)
-        else:
-            result = random_.choice(ulist)
-    
-    elif "s" in mode:
+
+    if "s" in mode:
         if ulist==None: pass
         elif len(mode) > 1:
             modeopt = mode[mode.index("s")+1]
@@ -91,8 +76,22 @@ def rand_(text,option=None,in_data=None):
                 result = "".join(result)
             else:
                 result = "\n".join(result)
-
-    else: result = "err:rand;無効なmodeです"
+    else:
+        if ulist==None: pass
+        elif len(mode) > 1:
+            modeopt = mode[mode.index("c")+1] 
+            result = random_.choices(ulist,k=int(modeopt))
+            if "L" in mode:
+                result = "\n".join(result)
+            elif "S" in mode:
+                result = " ".join(result)
+            elif "D" in mode:
+                result = "".join(result)
+            else:
+                result = "\n".join(result)
+        else:
+            result = random_.choice(ulist)
+    #else: result = "err:rand;無効なmodeです"
     
     if ulist==None:
         result = "err:rand:選択肢の指定がありません"
