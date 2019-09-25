@@ -14,6 +14,7 @@ FONTPATH = os.path.normpath(os.path.join(\
 #print(FONTPATH)
 FONTSIZE = 20
 COLOR = (255,255,255)
+var = []
 
 
 # commands =============================================================
@@ -91,7 +92,7 @@ def rand_(text,option=None,in_data=None):
                 result = "\n".join(result)
         else:
             result = random_.choice(ulist)
-    #else: result = "err:rand;無効なmodeです"
+    #else: result = "err:rand:無効なmodeです"
     
     if ulist==None:
         result = "err:rand:選択肢の指定がありません"
@@ -186,4 +187,69 @@ def drum(data,option=None,in_data=None):
         text = "【" + " ".join(data) + "】"
     return text + "\n\n　　　 　}二二{\n　　　 　}二二{\n　　 　　}二二{\n  　  　　  /   ／⌒)\n　　　　| ／ /　/\n　　　　ヽ_｜ /\n　　　　  / ｜｜\n　　　　/　(＿＼\n　　　／ ／　 ﾋﾉ\n　　  / ／\n　　`( ｜\n　  　L/"
 
+def replace(data,option=None,in_data=None):
+    count = None
+    try:
+        if option:
+            opt = option[1:]
+        else:
+            opt = None
+        if in_data:
+            text = in_data
+            old = data[0]
+            if "d" in opt:
+                new = ""
+            else:
+                new = data[1]
+        else:
+            text = data[0]
+            old = data[1]
+            if "d" in opt:
+                new = ""
+            else:
+                new = data[2]
+        if len(data) == 4:
+            count = int(data[3])
+    except:
+        return "err:replace:引数が足りません"
+    if "r" in opt:
+        replaced = re.sub(old,new,text)
+    else:
+        if count:
+            replaced = text.replace(old,new,count)
+        else:
+            replaced = text.replace(old,new)
+    return replaced
+
+def varout(data,option=None,in_data=None):
+    global var
+    if option:
+        option = option[1]
+    else:
+        option = None
+    if data:
+        if type(data) is list:
+            data = " ".join(data)
+    elif in_data and (in_data != ""):
+        data = in_data
+    if (option) and (int(option) < 10):
+        var[option] = data
+    elif not option:
+        var.append(data)
+    else:
+        return "err:varout:無効な変数番号"
+    return ""
+
+def varin(data,option=None,in_data=None):
+    global var
+    if option:
+        option = option[1]
+    else:
+        option = None
+    if (not option) and len(var) > 0:
+        return var[0]
+    elif (option) and (int(option) < 10) and (int(option) < len(var)):
+        return var[int(option)]
+    else:
+        return "err:varin:無効な変数番号"
 

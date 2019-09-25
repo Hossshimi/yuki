@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.4.7.1"
+VERSION = "yuki v0.5.0"
 
 
 
@@ -23,14 +23,17 @@ def version(*args):
     return VERSION
 
 FUNCLIST = {
-    "":emptyfunc, # 無効なcommandが書かれたときに活躍する
+    "":emptyfunc,
     "help":func.help,
     "version":version,
     "say":func.say,
     "textimg":func.textimg,
     "rand":func.rand_,
     "drum":func.drum,
-    "imgedit":None
+    "imgedit":None,
+    "replace":func.replace,
+    "varout":func.varout,
+    "varin":func.varin
 }
 
 mastodon = None
@@ -44,20 +47,14 @@ def anniv():
     m = t.month
     d = t.day
     raw = wikipedia.page(f"{m}月{d}日").content
-    tmp = raw[raw.find("== 記念日")+16:]
+    tmp = raw[raw.find("== 記念日")+15:]
     list = tmp[:tmp.find("\n\n\n==")].split("\n")
     text = ""
-    for i,part in enumerate(list):
-        if i%2 == 0:
-            if (len(text)+len(part)) < 501:
-                text += ( "<" + part + "> : " )
-            else:
-                break
+    for part in list:
+        if (len(text)+len(part)) < 501:
+            text += (part + "\n")
         else:
-            if (len(text)+len(part)) < 501:
-                text += ( part + "\n" )
-            else:
-                break
+            break
     mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}になりました！")
 
 def exec(command,data,option,in_data=None): # command実行時の例外をキャッチ
@@ -98,25 +95,25 @@ def shaper(rawtext,type_): # トゥートを整形する関数
     except:
         spl0 = ["say","err:main:不正な記法です"]
     p_index = 999
-    a_index = 999
+    j_index = 999
     for _ in range(spl0.count("|")+spl0.count("+")+1):
         if "|" in spl0:
             p_index = spl0.index("|")
         else:
             p_index = 999
         if "+" in spl0:
-            a_index = spl0.index("+")
+            j_index = spl0.index("+")
         else:
-            a_index = 999
-        if p_index < a_index:
+            j_index = 999
+        if p_index < j_index:
             joints.append("p")
             spltext.append(spl0[:p_index])
             spl0 = spl0[p_index+1:]
-        elif p_index > a_index:
-            joints.append("a")
-            spltext.append(spl0[:a_index])
-            spl0 = spl0[a_index+1:]
-        elif p_index == a_index:
+        elif p_index > j_index:
+            joints.append("j")
+            spltext.append(spl0[:j_index])
+            spl0 = spl0[j_index+1:]
+        elif p_index == j_index:
             spltext.append(spl0)
     if [] in spltext:
         spltext.remove([])
@@ -203,9 +200,9 @@ class MastodonStreamListener(StreamListener):
                                         break
                                 else:
                                     tmp = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                            elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
+                            elif shaped[2][i-1] == "j" and shaped[1][i]: # +で繋がれ,argがあるなら
                                 tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
-                            elif shaped[2][i-1] == "a": # +で繋がれ,argがないなら
+                            elif shaped[2][i-1] == "j": # +で繋がれ,argがないなら
                                 tmp = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
                         else: # 最後のcommandの処理なら
                             if shaped[2][i-1] == "p": # commandが|で繋がれているなら
@@ -216,7 +213,7 @@ class MastodonStreamListener(StreamListener):
                                         break
                                 else:
                                     result = exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                            elif shaped[2][i-1] == "a" and shaped[1][i]: # +で繋がれ,argがあるなら
+                            elif shaped[2][i-1] == "j" and shaped[1][i]: # +で繋がれ,argがあるなら
                                 result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i])
                             elif shaped[2][i-1]: # +で繋がれ,argがないなら
                                 result = tmp + exec([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
@@ -254,6 +251,8 @@ class MastodonStreamListener(StreamListener):
                 mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
                                         media_ids=media,sensitive=True)
                 img_flag = False
+        func.var = []
+
     def handle_heartbeat(self): # every 15s
         schedule.run_pending()
 
