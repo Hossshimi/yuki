@@ -189,11 +189,13 @@ def drum(data,option=None,in_data=None):
 
 def replace(data,option=None,in_data=None):
     count = None
+    if type(data) is str:
+        data = data.split(" ")
     try:
         if option:
             opt = option[1:]
         else:
-            opt = None
+            opt = ""
         if in_data:
             text = in_data
             old = data[0]
@@ -208,9 +210,9 @@ def replace(data,option=None,in_data=None):
                 new = ""
             else:
                 new = data[2]
-        if len(data) == 4:
+        if (type(data) is list) and (len(data) == 4):
             count = int(data[3])
-    except:
+    except Exception as _:
         return "err:replace:引数が足りません"
     if "r" in opt:
         replaced = re.sub(old,new,text)
@@ -221,7 +223,7 @@ def replace(data,option=None,in_data=None):
             replaced = text.replace(old,new)
     return replaced
 
-def varout(data,option=None,in_data=None):
+def varset(data,option=None,in_data=None):
     global var
     if option:
         option = option[1]
@@ -240,7 +242,7 @@ def varout(data,option=None,in_data=None):
         return "err:varout:無効な変数番号"
     return ""
 
-def varin(data,option=None,in_data=None):
+def varget(data,option=None,in_data=None):
     global var
     if option:
         option = option[1]
@@ -248,7 +250,7 @@ def varin(data,option=None,in_data=None):
         option = None
     if (not option) and len(var) > 0:
         return var[0]
-    elif (option) and (int(option) < 10) and (int(option) < len(var)):
+    elif (option) and (int(option) < len(var)):
         return var[int(option)]
     else:
         return "err:varin:無効な変数番号"

@@ -183,10 +183,10 @@ replace [-option] arg old new [count]
 
 
 
-### varout : 変数に格納
+### varset : 変数に格納
 
 ```
-varout [-option] [arg]
+varset [-option] [arg]
 		-0 ~ -9 : 10ある変数の中から格納する先を指定
 ```
 
@@ -194,7 +194,7 @@ varout [-option] [arg]
 
 `option` を指定しない場合は、0~9が若い順に割り振られていきます
 
-後述の `varin` コマンドと一緒に使います...基本的には。
+後述の `varget` コマンドと一緒に使います...基本的には。
 
 
 
@@ -202,10 +202,10 @@ varout [-option] [arg]
 
 
 
-### varin : 変数呼び出し
+### varget : 変数呼び出し
 
 ```
-varin -option
+varget -option
 		-0 ~ -9 : 10ある変数の中から呼び出す変数を指定
 ```
 

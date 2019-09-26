@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.5.0"
+VERSION = "yuki v0.5.1"
 
 
 
@@ -32,8 +32,8 @@ FUNCLIST = {
     "drum":func.drum,
     "imgedit":None,
     "replace":func.replace,
-    "varout":func.varout,
-    "varin":func.varin
+    "varset":func.varset,
+    "varget":func.varget
 }
 
 mastodon = None
