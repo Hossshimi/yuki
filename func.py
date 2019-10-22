@@ -81,7 +81,6 @@ def rand_(text,option=None,in_data=None):
     elif "i" in mode:
         if len(ulist) == 0: pass
         elif len(ulist) >= 2:
-            modev = mode[mode.index("i")+1] 
             result = str(random_.randint(ulist[0],ulist[1]))
 
     else:
