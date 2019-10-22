@@ -63,12 +63,12 @@ def rand_(text,option=None,in_data=None):
     if "s" in mode:
         if ulist==None: pass
         elif len(mode) > 1:
-            modeopt = mode[mode.index("s")+1]
-        else: modeopt = 1
-        if len(ulist) < int(modeopt):
+            modev = mode[mode.index("s")+1]
+        else: modev = 1
+        if len(ulist) < int(modev):
             result = "err:rand:選択数が多すぎます"
         else:
-            result = random_.sample(ulist,int(modeopt))
+            result = random_.sample(ulist,int(modev))
             if "L" in mode:
                 result = "\n".join(result)
             elif "S" in mode:
@@ -77,11 +77,18 @@ def rand_(text,option=None,in_data=None):
                 result = "".join(result)
             else:
                 result = "\n".join(result)
+
+    elif "i" in mode:
+        if len(ulist) == 0: pass
+        elif len(ulist) >= 2:
+            modev = mode[mode.index("i")+1] 
+            result = str(random_.randint(ulist[0],ulist[1]))
+
     else:
         if ulist==None: pass
         elif len(mode) > 1:
-            modeopt = mode[mode.index("c")+1] 
-            result = random_.choices(ulist,k=int(modeopt))
+            modev = mode[mode.index("c")+1] 
+            result = random_.choices(ulist,k=int(modev))
             if "L" in mode:
                 result = "\n".join(result)
             elif "S" in mode:

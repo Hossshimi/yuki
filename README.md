@@ -122,6 +122,7 @@ rand [-option] arg1 arg2 [arg3 ...]
 		-c 		: choice, argsから1つ選ぶ(デフォルト動作)
 		-c[num]	: choices, argsから複数選ぶ(同じ要素が複数出る点に注意)
 		-s[num]	: sample, argsから複数選ぶ(同じ要素が重複しない点に注意)
+		-i		: int, arg1 <= x <= arg2 を満たす整数を文字列で返す
 		-L		: Line feed, 結果を改行で結合(デフォルト動作)
 		-S		: Spaced, 結果を空白で結合
 		-D		: Delete space, 結果を間隔なしで結合
