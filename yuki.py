@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.6.0"
+VERSION = "yuki v0.6.1"
 
 
 
@@ -93,8 +93,9 @@ def shaper(rawtext,type_): # トゥートを整形する関数
             frm = ord(spl[1])
             to = ord(spl[4])
             unf_list = list(range(frm,to+1))
-            unf = " ".join(map(lambda n: chr(n), unf_list))
-            spl0[i] = unf
+            #unf = " ".join(map(lambda n: chr(n), unf_list))
+            tmp = spl0[i+1:]
+            spl0 = spl0[:i].append(unf_list).append(tmp)
     p_index = 999
     j_index = 999
     for _ in range(spl0.count("|")+spl0.count("+")+1):
