@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.6.1"
+VERSION = "yuki v0.6.2"
 
 
 
@@ -87,39 +87,40 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         spl0 = shlex.split(text)
     except:
         spl0 = ["say","err:main:不正な記法です"]
-    for i,spl in enumerate(spl0):
+    spl1 = []
+    for spl in spl0:
         shortened = re.match(r"\{.\.\..\}",spl)
         if shortened:
             frm = ord(spl[1])
             to = ord(spl[4])
-            unf_list = list(range(frm,to+1))
-            #unf = " ".join(map(lambda n: chr(n), unf_list))
-            tmp = spl0[i+1:]
-            spl0 = spl0[:i].append(unf_list).append(tmp)
+            unf_list = list(map(lambda n: chr(n), list(range(frm,to+1))))
+            spl1.extend(unf_list)
+        else:
+            spl1.append(spl)
     p_index = 999
     j_index = 999
-    for _ in range(spl0.count("|")+spl0.count("+")+1):
-        if "|" in spl0:
-            p_index = spl0.index("|")
+    for _ in range(spl1.count("|")+spl1.count("+")+1):
+        if "|" in spl1:
+            p_index = spl1.index("|")
         else:
             p_index = 999
-        if "+" in spl0:
-            j_index = spl0.index("+")
+        if "+" in spl1:
+            j_index = spl1.index("+")
         else:
             j_index = 999
         if p_index < j_index:
             joints.append("p")
-            spltext.append(spl0[:p_index])
-            spl0 = spl0[p_index+1:]
+            spltext.append(spl1[:p_index])
+            spl1 = spl1[p_index+1:]
         elif p_index > j_index:
             joints.append("j")
-            spltext.append(spl0[:j_index])
-            spl0 = spl0[j_index+1:]
+            spltext.append(spl1[:j_index])
+            spl1 = spl1[j_index+1:]
         elif p_index == j_index:
-            spltext.append(spl0)
+            spltext.append(spl1)
     if [] in spltext:
         spltext.remove([])
-        spltext.append(spl0)
+        spltext.append(spl1)
     commands = []
     data = []
     options = []
