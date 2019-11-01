@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.5.2"
+VERSION = "yuki v0.6.0"
 
 
 
@@ -51,7 +51,7 @@ def anniv():
     list = tmp[:tmp.find("\n\n\n==")].split("\n")
     text = ""
     for part in list:
-        if (len(text)+len(part)) < 501:
+        if (len(text)+len(part)) < 499:
             text += (part + "\n")
         else:
             break
@@ -59,9 +59,6 @@ def anniv():
 
 def exec(command,data,option,in_data=None): # command実行時の例外をキャッチ
     try:
-        #if in_data and (len(command) > 1):
-            #for i,c in enumerate(command):
-                #FUNCLIST[command[c]](data,in_data) + FUNCLIST[command]
         if in_data:
             return FUNCLIST[command[0]](data,option,in_data)
         else:
@@ -84,16 +81,20 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         text = "say 内容が・・・無いよう！ｗ"
     if text[0] == " ":
         text = text[1:]
-    #spltext = text.split(" | ")
-    #splspl = []
-    #for i,s in spltext:
-        #spltext[i] = s.split(" + ")
     spltext = []
     joints = []
     try:
         spl0 = shlex.split(text)
     except:
         spl0 = ["say","err:main:不正な記法です"]
+    for i,spl in enumerate(spl0):
+        shortened = re.match(r"\{.\.\..\}",spl)
+        if shortened:
+            frm = ord(spl[1])
+            to = ord(spl[4])
+            unf_list = list(range(frm,to+1))
+            unf = " ".join(map(lambda n: chr(n), unf_list))
+            spl0[i] = unf
     p_index = 999
     j_index = 999
     for _ in range(spl0.count("|")+spl0.count("+")+1):

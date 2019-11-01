@@ -51,13 +51,13 @@ def rand_(text,option=None,in_data=None):
         raw = text
     if option:
         mode = option[1:]
-    if ("C" in mode) and (type(raw) is str):
+    if ("C" in mode) and (type(raw) is str): # パイプからではなく直接与えられ, Cオプションの場合
         ulist =list(raw)
-    elif "C" in mode:
+    elif "C" in mode: # パイプから与えられ, Cオプションの場合
         ulist = list(" ".join(raw))
-    elif type(raw) is list:
+    elif type(raw) is list: # パイプから与えられ, Cオプションではない場合
         ulist = raw
-    else:
+    else: # パイプからではなく直接与えられ, Cオプションではない場合
         ulist = raw.split()
 
     if "s" in mode:
