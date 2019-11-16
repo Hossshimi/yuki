@@ -261,10 +261,14 @@ def zwsp(**args):
     return chr(8203)
 
 def n2c(data,option=None,in_data=None):
-    if data == None:
+    if in_data:
+        data = in_data
+    if (data == None) or (data == ""):
         raise Exception("err:n2c:コードポイントの指定なし")
-    if type(data) is list:
+    if (type(data) is list) and (len(data)>1):
         raise Exception("err:n2c:無効な数値指定")
+    elif type(data) is list:
+        data = data[0]
     if option == "-h":
         d = int(data,16)
     elif option == "-d":
