@@ -18,7 +18,7 @@ var = []
 
 
 # commands =============================================================
-def help(*args):
+def help_(*args):
     return "https://github.com/Hossshimi/yuki"
 
 def say(data,option=None,in_data=None):
@@ -66,7 +66,7 @@ def rand_(text,option=None,in_data=None):
             modev = mode[mode.index("s")+1]
         else: modev = 1
         if len(ulist) < int(modev):
-            result = "err:rand:選択数が多すぎます"
+            raise Exception("err:rand:選択数が多すぎます")
         else:
             result = random_.sample(ulist,int(modev))
             if "L" in mode:
@@ -101,7 +101,7 @@ def rand_(text,option=None,in_data=None):
     #else: result = "err:rand:無効なmodeです"
     
     if ulist==None:
-        result = "err:rand:選択肢の指定がありません"
+        raise Exception("err:rand:選択肢の指定がありません")
     
     return result
 
@@ -172,7 +172,7 @@ def imgedit(text,in_data):
         result.save("img.png")
     elif "m" in mode:
         level = float(mode[1:])
-        if level >= 10: return "err:imgedit:無効なlevel"
+        if level >= 10: raise Exception("err:imgedit:無効なlevel")
         ratio = 1 - 0.1*level
         img = cv2.imread("img.png")
         tmp = cv2.resize(img, None, fx=ratio, fy=ratio, \
@@ -181,7 +181,7 @@ def imgedit(text,in_data):
             interpolation=cv2.INTER_NEAREST)
         cv2.imwrite("img.png",result)
     else:
-        return "err:imgedit:無効なoption"
+        raise Exception("err:imgedit:無効なoption")
     return 0
     
 def drum(data,option=None,in_data=None):
@@ -219,7 +219,7 @@ def replace(data,option=None,in_data=None):
         if (type(data) is list) and (len(data) == 4):
             count = int(data[3])
     except Exception as _:
-        return "err:replace:引数が足りません"
+        raise Exception("err:replace:引数が足りません")
     if "r" in opt:
         replaced = re.sub(old,new,text)
     else:
@@ -233,8 +233,6 @@ def varset(data,option=None,in_data=None):
     global var
     if option:
         option = option[1]
-    else:
-        option = None
     if data:
         if type(data) is list:
             data = " ".join(data)
@@ -245,19 +243,34 @@ def varset(data,option=None,in_data=None):
     elif not option:
         var.append(data)
     else:
-        return "err:varout:無効な変数番号"
+        raise Exception("err:varset:無効な変数番号")
     return ""
 
 def varget(data,option=None,in_data=None):
     global var
     if option:
         option = option[1]
-    else:
-        option = None
     if (not option) and len(var) > 0:
         return var[0]
     elif (option) and (int(option) < len(var)):
         return var[int(option)]
     else:
-        return "err:varin:無効な変数番号"
+        raise Exception("err:varget:無効な変数番号")
 
+def zwsp(**args):
+    return chr(8203)
+
+def n2c(data,option=None,in_data=None):
+    if data == None:
+        raise Exception("err:n2c:コードポイントの指定なし")
+    if type(data) is list:
+        raise Exception("err:n2c:無効な数値指定")
+    if option == "-h":
+        d = int(data,16)
+    elif option == "-d":
+        d = int(data)
+    elif option:
+        raise Exception("err:n2c:無効なオプション")
+    else:
+        d = int(data,16)
+    return chr(d)
