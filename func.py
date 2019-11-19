@@ -278,3 +278,28 @@ def n2c(data,option=None,in_data=None):
     else:
         d = int(data,16)
     return chr(d)
+
+def insert(data,option=None,in_data=None):
+    if in_data == None:
+        raise Exception("err:insert:対象文字列なし")
+    elif (data == None) or (data == ""):
+        raise Exception("err:insert:挿入文字列の指定なし")
+    elif (option == None) or (option == "-"):
+        raise Exception("err:insert:挿入位置の指定なし")
+    if type(data) is list:
+        data = " ".join(data)
+    if (len(option) > 2) and (option[1] == "-"):
+        if option[2:].isnumeric():
+            index = int(option[1:])
+        else:
+            raise Exception("err:insert:無効なインデックス指定")
+    elif option[1:].isnumeric():
+        index = int(option[1:])
+    else:
+        raise Exception("err:insert:無効なインデックス指定")
+    l = list(in_data)
+    l.insert(index,data)
+    result = "".join(l)
+    return result
+
+    

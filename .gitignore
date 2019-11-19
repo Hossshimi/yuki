@@ -4,3 +4,7 @@ __pycache__/
 yuki_*.txt
 *.png
 .vscode/
+inori.py
+inori_func.py
+Grammar.ebnf
+Grammar.txt

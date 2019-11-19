@@ -13,7 +13,7 @@ import func
 
 
 
-VERSION = "yuki v0.6.4"
+VERSION = "yuki v0.6.5"
 
 
 
@@ -34,7 +34,8 @@ FUNCLIST = {
     "replace":func.replace,
     "varset":func.varset,
     "varget":func.varget,
-    "n2c":func.n2c
+    "n2c":func.n2c,
+    "insert":func.insert
 }
 
 mastodon = None
@@ -58,7 +59,7 @@ def anniv():
             break
     mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}になりました！")
 
-def execute(command,data,option,in_data=None): # command実行時の例外をキャッチ
+def execute(command,data,option,in_data=None):
     if in_data:
         return FUNCLIST[command[0]](data,option,in_data)
     else:
@@ -124,7 +125,6 @@ def shaper(rawtext,type_): # トゥートを整形する関数
     options = []
     o_flag = False
     for part in spltext:
-        #sp = part.split(maxsplit=1)
         commands.append(part[0])
         for part_ in part:
             if part_.startswith("-") and len(part_.split()) == 1:
@@ -162,7 +162,6 @@ class Parser(HTMLParser):
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
         if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="yuki"):
-            #print(toot["content"])
             global mastodon,img_flag
 
             shaped = shaper(rawtext=toot["content"], type_="tag")
