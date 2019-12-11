@@ -123,7 +123,7 @@ def shaper(rawtext,type_): # トゥートを整形する関数
         parser = Parser()
         parser.feed(rawtext)
         parser.close()
-        text = parser.parsed.replace("#inori_kawaiuniv","",1)
+        text = parser.parsed.replace("#yuki_kawaiuniv","",1)
     if text == "":
         text = "say 内容が・・・無いよう！ｗ"
     if text[0] == " ":
@@ -157,7 +157,7 @@ class Parser(HTMLParser):
 
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
-        if ("inori_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="inori"):
+        if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="inori"):
             global mastodon, result, tootdata
             tootdata = toot
 
