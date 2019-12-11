@@ -6,8 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 import urllib.request
 from io import BytesIO
 import numpy
-from numpy.random import *
+import numpy.random as nprand
 import cv2
+
+VERSION = "yuki 1.0.0"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -18,50 +20,55 @@ var = []
 
 
 # commands =============================================================
-def help_(*args):
-    return "https://github.com/Hossshimi/yuki"
+def version(*args):
+    return VERSION
 
-def say(data,option=None,in_data=None):
-    if in_data:
-        return in_data
-    elif data == []:
-        return "内容が・・・無いよう！ｗ"
+def say(arg,option=None):
+    #if type(arg) is str:
+    #    return arg
+    if arg:
+        return " ".join(arg)
     else:
-        return " ".join(data)
+        raise Exception("内容が・・・無いよう！ｗ")
 
-def textimg(data,option=None,in_data=None):
-    #global FONTPATH,FONTSIZE,COLOR
-    if in_data:
-        text = in_data
+def textimg(arg,option=None):
+    global FONTPATH,FONTSIZE,COLOR
+    #if type(arg) is str:
+    #    text = arg
+    if arg:
+        text = " ".join(arg)
     else:
-        text = " ".join(data)
+        raise Exception("err:textimg:引数の指定なし")
+    if "b" in option:
+        bgc_h_s = option[option.index("b")+1:option.index("b")+7]
+        bgc = (int(bgc_h_s[:2],16),int(bgc_h_s[2:4],16),int(bgc_h_s[4:6],16))
+    else: bgc = (0,0,0)
+    if "t" in option:
+        tc_h_s = option[option.index("t")+1:option.index("t")+7]
+        tc = (int(tc_h_s[:2],16),int(tc_h_s[2:4],16),int(tc_h_s[4:6],16))
+    else: tc = COLOR
     font = ImageFont.truetype(FONTPATH,FONTSIZE)
     width, height = font.getsize_multiline(text)
-    bg_ = Image.new("RGB", (width+20,height+20), (0,0,0))
+    bg_ = Image.new("RGB", (width+20,height+20), bgc)
     bg = ImageDraw.Draw(bg_)
-    bg.multiline_text((5,5), text, fill=COLOR, font=font)
+    bg.multiline_text((5,5), text, fill=tc, font=font)
     bg_.save("img.png")
     return 0
 
-def rand_(text,option=None,in_data=None):
+def rand(arg,option="None"):
     mode = "c"
-    if in_data:
-        raw = in_data
+    if type(arg) is str:
+        ulist = arg.split()
     else:
-        raw = text
-    if option:
-        mode = option[1:]
-    if ("C" in mode) and (type(raw) is str): # パイプからではなく直接与えられ, Cオプションの場合
-        ulist =list(raw)
-    elif "C" in mode: # パイプから与えられ, Cオプションの場合
-        ulist = list(" ".join(raw))
-    elif type(raw) is list: # パイプから与えられ, Cオプションではない場合
-        ulist = raw
-    else: # パイプからではなく直接与えられ, Cオプションではない場合
-        ulist = raw.split()
+        ulist = arg
+    if option != "None":
+        mode = option
+
+    if ("C" in mode): # Cオプションの場合
+        ulist =list(" ".join(ulist))
 
     if "s" in mode:
-        if ulist==None: pass
+        if not ulist: pass
         elif len(mode) > 1:
             modev = mode[mode.index("s")+1]
         else: modev = 1
@@ -80,7 +87,7 @@ def rand_(text,option=None,in_data=None):
 
     elif "i" in mode:
         if len(ulist) == 0: pass
-        elif len(ulist) >= 2:
+        elif len(ulist) > 1:
             result = str(random_.randint(ulist[0],ulist[1]))
 
     else:
@@ -105,27 +112,26 @@ def rand_(text,option=None,in_data=None):
     
     return result
 
-def imgedit(text,in_data):
-    mode = "n"    
-    if text != None:
-        mode = text[1:]
-    if in_data != "internal":
+def imgedit(arg,option):  
+    mode = option
+    if "u" in mode:
         try:
-            with urllib.request.urlopen(in_data) as media:
+            with urllib.request.urlopen(mode[mode.index("h"):]) as media:
                 data = media.read()
                 with open("img.png","wb") as f:
                     f.write(data)
+            mode = mode[:mode.index("h")]
         except:
-            return "image downroad error!"
+            raise Exception("err:imgedit:画像取得エラー")
     img = Image.open("img.png").convert("RGB")
     img_array = numpy.array(img)
-    if mode == "n":
+    if "n" in mode:
         img_array = img_array.astype("int16")
         for i in range(img_array.shape[0]):
             for j in range(img_array.shape[1]):
-                flag = randint(100)
+                flag = nprand.randint(100)
                 if flag > 80:
-                    noizdiff = (randn(3)*40).astype("int16")
+                    noizdiff = (nprand.randn(3)*40).astype("int16")
                     img_array[i][j] += noizdiff
                     """rgb = img_array[i,j].astype("float")
                     if rgb[0]+noizdiff[0] > 255:
@@ -149,29 +155,29 @@ def imgedit(text,in_data):
         img_array = img_array.clip(0,255).astype("uint8")
         result = Image.fromarray(img_array.astype("uint8"))
         result.save("img.png")
-    elif mode == "R":
+    elif "R" in mode:
         img_array[:,:,(1,2)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "G":
+    elif "G" in mode:
         img_array[:,:,(0,2)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "B":
+    elif "B" in mode:
         img_array[:,:,(0,1)] = 0
         result = Image.fromarray(img_array)
         result.save("img.png")
-    elif mode == "g":
+    elif "g" in mode:
         grey = 0.299 * img_array[:, :, 0] + 0.587 * img_array[:, :, 1]\
              + 0.114 * img_array[:, :, 2]
         result = Image.fromarray(numpy.uint8(grey))
         result.save("img.png")
-    elif mode == "i":
+    elif "i" in mode:
         result = 255 - img_array
         result = Image.fromarray(result)
         result.save("img.png")
     elif "m" in mode:
-        level = float(mode[1:])
+        level = int(mode[mode.index("m")+1])
         if level >= 10: raise Exception("err:imgedit:無効なlevel")
         ratio = 1 - 0.1*level
         img = cv2.imread("img.png")
@@ -184,41 +190,28 @@ def imgedit(text,in_data):
         raise Exception("err:imgedit:無効なoption")
     return 0
     
-def drum(data,option=None,in_data=None):
-    if in_data:
-        text = "【" + in_data + "】"
-    elif data == []:
+def drum(arg,option="None"):
+    if not arg:
         text = "【歩くドラム缶の恐怖】"
     else:
-        text = "【" + " ".join(data) + "】"
+        text = "【" + " ".join(arg) + "】"
     return text + "\n\n　　　 　}二二{\n　　　 　}二二{\n　　 　　}二二{\n  　  　　  /   ／⌒)\n　　　　| ／ /　/\n　　　　ヽ_｜ /\n　　　　  / ｜｜\n　　　　/　(＿＼\n　　　／ ／　 ﾋﾉ\n　　  / ／\n　　`( ｜\n　  　L/"
 
-def replace(data,option=None,in_data=None):
+def replace(arg,option="None",in_data=None):
     count = None
-    if type(data) is str:
-        data = data.split(" ")
+    #if type(arg) is str:
+    #    data = arg.split(" ")
+    if in_data: arg.insert(0,in_data)
     try:
-        if option:
-            opt = option[1:]
-        else:
-            opt = ""
-        if in_data:
-            text = in_data
-            old = data[0]
-            if "d" in opt:
-                new = ""
-            else:
-                new = data[1]
-        else:
-            text = data[0]
-            old = data[1]
-            if "d" in opt:
-                new = ""
-            else:
-                new = data[2]
-        if (type(data) is list) and (len(data) == 4):
-            count = int(data[3])
-    except Exception as _:
+        if option != "None": opt = option
+        else: opt = ""
+        text = arg[0]
+        old = arg[1]
+        if "d" in opt: new = ""
+        else: new = arg[2]
+        if len(arg) == 4:
+            count = int(arg[3])
+    except Exception:
         raise Exception("err:replace:引数が足りません")
     if "r" in opt:
         replaced = re.sub(old,new,text)
@@ -229,77 +222,68 @@ def replace(data,option=None,in_data=None):
             replaced = text.replace(old,new)
     return replaced
 
-def varset(data,option=None,in_data=None):
-    global var
-    if option:
-        option = option[1]
-    if data:
-        if type(data) is list:
-            data = " ".join(data)
-    elif in_data and (in_data != ""):
-        data = in_data
-    if (option) and (int(option) < 10):
-        var[option] = data
-    elif not option:
-        var.append(data)
-    else:
-        raise Exception("err:varset:無効な変数番号")
-    return ""
+#def varset(data,option=None,in_data=None):
+#    global var
+#    if option:
+#        option = option[1]
+#    if data:
+#        if type(data) is list:
+#            data = " ".join(data)
+#    elif in_data and (in_data != ""):
+#        data = in_data
+#    if (option) and (int(option) < 10):
+#        var[option] = data
+#    elif not option:
+#        var.append(data)
+#    else:
+#        raise Exception("err:varset:無効な変数番号")
+#    return ""
 
-def varget(data,option=None,in_data=None):
-    global var
-    if option:
-        option = option[1]
-    if (not option) and len(var) > 0:
-        return var[0]
-    elif (option) and (int(option) < len(var)):
-        return var[int(option)]
-    else:
-        raise Exception("err:varget:無効な変数番号")
+#def varget(data,option=None,in_data=None):
+#    global var
+#    if option:
+#        option = option[1]
+#    if (not option) and len(var) > 0:
+#        return var[0]
+#    elif (option) and (int(option) < len(var)):
+#        return var[int(option)]
+#    else:
+#        raise Exception("err:varget:無効な変数番号")
 
-def zwsp(**args):
+def zwsp():
     return chr(8203)
 
-def n2c(data,option=None,in_data=None):
-    if in_data:
-        data = in_data
-    if (data == None) or (data == ""):
+def n2c(data,option="None"):
+    if not data:
         raise Exception("err:n2c:コードポイントの指定なし")
     if (type(data) is list) and (len(data)>1):
         raise Exception("err:n2c:無効な数値指定")
-    elif type(data) is list:
-        data = data[0]
-    if option == "-h":
-        d = int(data,16)
-    elif option == "-d":
-        d = int(data)
-    elif option:
-        raise Exception("err:n2c:無効なオプション")
-    else:
-        d = int(data,16)
+    elif type(data) is list: data = data[0]
+    if option == "-h": d = int(data,16)
+    elif option == "-d": d = int(data)
+    elif option: raise Exception("err:n2c:無効なオプション")
+    else: d = int(data,16)
     return chr(d)
 
 def insert(data,option=None,in_data=None):
-    if in_data == None:
+    if (in_data == "None") or (in_data == ""):
         raise Exception("err:insert:対象文字列なし")
-    elif (data == None) or (data == ""):
+    elif (data == "None") or (data == ""):
         raise Exception("err:insert:挿入文字列の指定なし")
-    elif (option == None) or (option == "-"):
+    elif (option == "None") or (option == ""):
         raise Exception("err:insert:挿入位置の指定なし")
     if type(data) is list:
         data = " ".join(data)
-    if (len(option) > 2) and (option[1] == "-"):
-        if option[2:].isnumeric():
+    if (len(option) > 3) and (option[1] == "-"):
+        if option[1:].isnumeric():
             index = int(option[1:])
         else:
             raise Exception("err:insert:無効なインデックス指定")
-    elif option[1:].isnumeric():
-        index = int(option[1:])
+    elif option.isnumeric():
+        index = int(option)
     else:
         raise Exception("err:insert:無効なインデックス指定")
     l = list(in_data)
     l.insert(index,data)
     result = "".join(l)
     return result
-
-    

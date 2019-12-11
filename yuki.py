@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from mastodon import Mastodon
 from mastodon import StreamListener
 from html.parser import HTMLParser
@@ -9,37 +11,92 @@ import schedule
 import wikipedia
 import datetime
 
+from lark import Lark, Transformer
+
 import func
 
 
 
-VERSION = "yuki v0.6.5"
+#VERSION = "dev-1.0.0"
 
 
+with open("Grammar.lark",encoding="utf-8") as grammar:
+    LP = Lark(grammar.read(),start="script")
 
-def emptyfunc(*args):
-    pass
-def version(*args):
-    return VERSION
+result = None
 
-FUNCLIST = {
-    "":emptyfunc,
-    "help":func.help_,
-    "version":version,
-    "say":func.say,
-    "textimg":func.textimg,
-    "rand":func.rand_,
-    "drum":func.drum,
-    "imgedit":None,
-    "replace":func.replace,
-    "varset":func.varset,
-    "varget":func.varget,
-    "n2c":func.n2c,
-    "insert":func.insert
-}
+class T(Transformer):
+    def __init__(self):
+        global result
+        self._command = []
+        self._option = []
+        self._args = []
+        self._sentence_res = None
+        self._chunk_res = []
+        self.qflag = False
+
+    def sentence(self,tree):
+        global result, tootdata
+        command = self._command.pop()
+        try: option = self._option.pop()
+        except: option = None
+        try:
+            if command == None:
+                pass
+            elif (command == "imgedit") and ("u" in option): 
+                media_url = tootdata["media_attachments"][0]["url"]
+                result = eval(f"func.imgedit(None,'{option}{media_url}')",globals())
+            elif command == "insert":
+                result = eval(f"=func.insert('{' '.join(self._args)}','{option}','{result}')",globals(),locals())
+            elif (command == "replace") and (result):
+                result = eval(f"func.replace(self._args,'{option}',result)",globals(),locals())
+            elif command == "replace":
+                result = eval(f"func.replace(self._args,'{option}')",globals(),locals())
+            elif result:
+                result = eval(f"func.{command}('{result}','{option}')",globals(),globals())
+            else:
+                result = eval(f"func.{command}(self._args,'{option}')",globals(),locals())
+        except IndexError as e:
+            pass
+        except Exception as e: result = str(e)
+        self._args = []
+    
+    def allchars(self,tree):
+        self.qflag = True
+
+    def command(self,tree):
+        try: self._command.append(tree[0].children[0].value)
+        except: self._command.append(None)
+    
+    def option(self,tree):
+        if len(self._command) > len(self._option):
+            self._option.append(None)
+        try: self._option.append(tree[0].children[0].value)
+        except: self._option.append(None)
+    
+    def arg(self,tree):
+        try: self._args.append(tree[0].children[0].value)
+        except: self._args = []
+    
+    def chunk(self,tree):
+        global result
+        if (type(result) is str):
+            self._chunk_res.append(result)
+            #if result != 0:
+            result = ""
+
+    def subshell(self,tree):
+        self._chunk_res.pop()
+    
+    def script(self,tree):
+        global result
+        if type(result) is str:
+            result = "".join(self._chunk_res)
+
+
 
 mastodon = None
-img_flag = False
+tootdata = None
 
 
 
@@ -57,88 +114,27 @@ def anniv():
             text += (part + "\n")
         else:
             break
-    mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}になりました！")
+    mastodon.status_post(status=text,visibility="unlisted",spoiler_text=f"{m}/{d}～")
 
-def execute(command,data,option,in_data=None):
-    if in_data:
-        return FUNCLIST[command[0]](data,option,in_data)
-    else:
-        return FUNCLIST[command[0]](data,option)
+
 
 def shaper(rawtext,type_): # トゥートを整形する関数
-    """if type_ == "conv":
-        if rawtext[5] == " ":
-            data = rawtext.replace("")
-        else:
-            data = text[21:]"""
     if type_ == "tag":
         parser = Parser()
         parser.feed(rawtext)
         parser.close()
-        text = parser.parsed.replace("#yuki_kawaiuniv","",1)
+        text = parser.parsed.replace("#inori_kawaiuniv","",1)
     if text == "":
         text = "say 内容が・・・無いよう！ｗ"
     if text[0] == " ":
         text = text[1:]
-    spltext = []
-    joints = []
-    try:
-        spl0 = shlex.split(text)
-    except:
-        spl0 = ["say","err:main:不正な記法です"]
-    spl1 = []
-    for spl in spl0:
-        shortened = re.match(r"\{.\.\..\}",spl)
-        if shortened:
-            frm = ord(spl[1])
-            to = ord(spl[4])
-            unf_list = list(map(lambda n: chr(n), list(range(frm,to+1))))
-            spl1.extend(unf_list)
-        else:
-            spl1.append(spl)
-    p_index = 999
-    j_index = 999
-    for _ in range(spl1.count("|")+spl1.count("+")+1):
-        if "|" in spl1:
-            p_index = spl1.index("|")
-        else:
-            p_index = 999
-        if "+" in spl1:
-            j_index = spl1.index("+")
-        else:
-            j_index = 999
-        if p_index < j_index:
-            joints.append("p")
-            spltext.append(spl1[:p_index])
-            spl1 = spl1[p_index+1:]
-        elif p_index > j_index:
-            joints.append("j")
-            spltext.append(spl1[:j_index])
-            spl1 = spl1[j_index+1:]
-        elif p_index == j_index:
-            spltext.append(spl1)
-    if [] in spltext:
-        spltext.remove([])
-        spltext.append(spl1)
-    commands = []
-    data = []
-    options = []
-    o_flag = False
-    for part in spltext:
-        commands.append(part[0])
-        for part_ in part:
-            if part_.startswith("-") and len(part_.split()) == 1:
-                options.append(part_)
-                part.remove(part_)
-                o_flag = True
-        if not o_flag:
-            options.append(None)
-        o_flag = False
-        try:
-            data.append(part[1:])
-        except:
-            data.append(None)
-    return commands,data,joints,options
+    for sh in re.finditer(r"\{.\.\..\}",text):
+        frm = ord(sh.group()[1])
+        to = ord(sh.group()[4])
+        unf_list = list(map(lambda n: chr(n), list(range(frm,to+1))))
+        unf = " ".join(unf_list)
+        text = text[:sh.span()[0]] + unf + text[sh.span()[1]:]
+    return text
 
 
 
@@ -161,99 +157,35 @@ class Parser(HTMLParser):
 
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
-        if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="yuki"):
-            global mastodon,img_flag
+        if ("inori_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="inori"):
+            global mastodon, result, tootdata
+            tootdata = toot
 
             shaped = shaper(rawtext=toot["content"], type_="tag")
             # toot内容を整形関数に渡す
 
-            commands_count = len(shaped[0])
-            result = None
-            imgerr = False
+            try: 
+                tree = LP.parse(shaped)
+                #print(tree.pretty())
+                result = None
+                T().transform(tree)
+            except Exception as e: result = f"Syntax err:※{str(e)}"
             
             try:
-                for i in range(commands_count): # それぞれのcommandに対して
-                    if shaped[0][i] in FUNCLIST:
-                        if len(shaped[0]) > 1: # commandが複数なら
-                            if i == 0: # 1つめのcommandの処理なら
-                                if shaped[0][0] == "imgedit":
-                                    img_flag = True
-                                    url = toot["media_attachments"][0]["url"]
-                                    res = func.imgedit(shaped[3][0],url)
-                                    if res != 0:
-                                        imgerr = True
-                                        break
-                                    #media = mastodon.media_post("img.png",mime_type="image/png")
-                                    #mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
-                                                            #media_ids=media,sensitive=True)
-                                else:
-                                    if shaped[0][0] == "textimg":
-                                        img_flag = True
-                                    tmp = execute([shaped[0][0]],shaped[1][0],shaped[3][0])
-                            elif i+1 != commands_count: # 2回目以降かつ次のcommandがまだ残っているなら                                
-                                if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                    if shaped[0][i] == "textimg":
-                                        img_flag = True
-                                    if ((shaped[0][i-1] == "textimg") or (shaped[0][i-1] == "imgedit")) and (shaped[0][i] == "imgedit"):
-                                        res = func.imgedit(shaped[3][i],"internal")
-                                        if res != 0: 
-                                            imgerr = True
-                                            break
-                                    else:
-                                        tmp = execute([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                                elif shaped[2][i-1] == "j" and shaped[1][i]: # +で繋がれ,argがあるなら
-                                    tmp = tmp + execute([shaped[0][i]],shaped[1][i],shaped[3][i])
-                                elif shaped[2][i-1] == "j": # +で繋がれ,argがないなら
-                                    tmp = tmp + execute([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                            else: # 最後のcommandの処理なら
-                                if shaped[2][i-1] == "p": # commandが|で繋がれているなら
-                                    if ((shaped[0][i-1] == "textimg") or (shaped[0][i-1] == "imgedit")) and (shaped[0][i] == "imgedit"):
-                                        res = func.imgedit(shaped[3][i],"internal")
-                                        if res != 0: 
-                                            imgerr = True
-                                            break
-                                    else:
-                                        result = execute([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                                elif shaped[2][i-1] == "j" and shaped[1][i]: # +で繋がれ,argがあるなら
-                                    result = tmp + execute([shaped[0][i]],shaped[1][i],shaped[3][i])
-                                elif shaped[2][i-1]: # +で繋がれ,argがないなら
-                                    result = tmp + execute([shaped[0][i]],shaped[1][i],shaped[3][i],in_data=tmp)
-                                if shaped[0][i] == ("textimg" or "imgedit"):
-                                    img_flag = True
-                        else: # commandが1つなら
-                            if shaped[0][0] == ("textimg" or "imgedit"):
-                                img_flag = True
-                            if shaped[0][0] == "imgedit":
-                                    img_flag = True
-                                    url = toot["media_attachments"][0]["url"]
-                                    res = func.imgedit(shaped[3][0],url)
-                                    if res != 0:
-                                        imgerr = True
-                                        break
-                                    #media = mastodon.media_post("img.png",mime_type="image/png")
-                                    #mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
-                                                            #media_ids=media,sensitive=True)
-                            else:
-                                result = execute([shaped[0][0]],shaped[1][0],shaped[3][0])
-                    else: # FUNCLISTに指定されたcommandが含まれていないなら
-                        result = "err:main:指定されたコマンドは見つかりませんでした..."
-                if not img_flag: # 出力が文字列の場合
-                    if result == None:
-                        mastodon.status_post(status="何か御用でしょうか？",in_reply_to_id=toot["id"])
+                if result != 0: # 出力が文字列の場合
+                    if not result:
+                        mastodon.status_post(status="何か用？",in_reply_to_id=toot["id"])
                     else:
                         if len(result) < 501:
                             mastodon.status_post(status=result,in_reply_to_id=toot["id"],spoiler_text="result")
                         else:
-                            mastodon.status_post(status="結果が500文字を超えています",in_reply_to_id=toot["id"])
+                            mastodon.status_post(status="結果が500文字を超えてます",in_reply_to_id=toot["id"])
                 else: # 出力が画像の場合
-                    if imgerr:
-                        mastodon.status_post(status="画像処理のエラーが発生しました...",in_reply_to_id=toot["id"])
                     media = mastodon.media_post("img.png",mime_type="image/png")
-                    mastodon.status_post(status="終わりました！",in_reply_to_id=toot["id"],\
+                    mastodon.status_post(status="終わり！",in_reply_to_id=toot["id"],\
                                             media_ids=media,sensitive=True)
-                    img_flag = False
             except Exception as e:
-                mastodon.status_post(status=e,in_reply_to_id=toot["id"])
+                mastodon.status_post(status=str(e),in_reply_to_id=toot["id"])
         func.var = []
 
     def handle_heartbeat(self): # every 15s
