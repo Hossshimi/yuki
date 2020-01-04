@@ -5,7 +5,7 @@
 ## 基本的な使い方
 
 ```
-#yuki_kawaiuniv <command> args
+#yuki_kawaiuniv <command> <args>
 ```
 
 `#yuki_kawaiuniv` は**最初につけてください**
@@ -15,7 +15,7 @@
 ## オプション付きでコマンドを実行
 
 ```
-#yuki_kawaiuniv <command> -option args
+#yuki_kawaiuniv <command> -<option> <args>
 ```
 
 `-option` の位置は **`args` の前にしてください**
@@ -27,7 +27,7 @@
 ## コマンドの実行結果を別のコマンドに渡す
 
 ```
-#yuki_kawaiuniv <command1> args | <command2>
+#yuki_kawaiuniv <command1> <args> | <command2>
 ```
 
 `|`で `command` をつなぎます
@@ -39,7 +39,7 @@
 ## 実行結果をつなげる
 
 ```
-#yuki_kawaiuniv <command1> arg1 + <command2> arg2
+#yuki_kawaiuniv <command1> <arg1> + <command2> <arg2>
 ```
 
 `+` で `command` をつなぎます
@@ -89,7 +89,7 @@ example2では`あ`から`ん`までの`ぁ あ ぃ い ... ん`といったよ�
 ### say : オウム返し
 
 ```
-say arg
+say <arg>
 ```
 
 他の `command` に文字列を渡したりできます(あえてこれを使う必要もないのですが)
@@ -117,7 +117,7 @@ version
 ### rand : 要素の中から選ぶ
 
 ```
-rand [-option] arg1 arg2 [arg3 ...]
+rand [-option] <arg1> <arg2> [arg3 ...]
 
 		-C		: Character by character, 引数の文字列を1字ずつに分割して引数とする
 		-c 		: choice, argsから1つ選ぶ(デフォルト動作)
@@ -139,7 +139,7 @@ rand [-option] arg1 arg2 [arg3 ...]
 ### textimg : 画像生成
 
 ```
-textimg [-option] arg
+textimg [-option] <arg>
 		-b<color>	: 背景色指定, 16進6桁カラーコードで指定('#'不要)
 		-t<color>	: 文字色指定, 16進6桁カラーコードで指定('#'不要)
 ```
@@ -191,7 +191,7 @@ drum [arg]
 ### replace : 文字列の置換/削除
 
 ```
-replace [-option] arg old new [count]
+replace [-option] <arg> <old> <new> [count]
 		-d : delete, 該当文字列を削除(この場合newの指定は不要)
 		-r : regular expressions, oldの指定を正規表現で行う
 ```
@@ -203,7 +203,7 @@ replace [-option] arg old new [count]
 ### n2c : Unicodeコードポイントで文字指定
 
 ```
-n2c [-option] numeral
+n2c [-option] <numeral>
 	-h : 16進数で指定
 	-d : 10進数で指定
 ```
@@ -227,7 +227,7 @@ zwsp
 ### insert : 文字列の指定した位置に文字列挿入
 
 ```
-<command> arg | insert -index text
+<command> <arg> | insert -<index> <text>
 ```
 
 **`|` で他のコマンドの結果から文字列を受け取る必要があります**
