@@ -23,7 +23,7 @@ var = []
 def version(*args):
     return VERSION
 
-def say(arg,option=None):
+def say(arg,option="None"):
     #if type(arg) is str:
     #    return arg
     if type(arg) is list:
@@ -33,7 +33,7 @@ def say(arg,option=None):
     else:
         raise Exception("内容が・・・無いよう！ｗ")
 
-def textimg(arg,option=None):
+def textimg(arg,option="None"):
     global FONTPATH,FONTSIZE,COLOR
     #if type(arg) is str:
     #    text = arg
@@ -269,7 +269,7 @@ def n2c(data,option="None"):
     else: d = int(data,16)
     return chr(d)
 
-def insert(data,option=None,in_data=None):
+def insert(data,option="None",in_data="None"):
     if (in_data == "None") or (in_data == ""):
         raise Exception("err:insert:対象文字列なし")
     elif (data == "None") or (data == ""):
