@@ -131,7 +131,6 @@ rand [-option] <arg1> <arg2> [arg3 ...]
 		-L		: Line feed, 結果を改行で結合(デフォルト動作)
 		-S		: Spaced, 結果を空白で結合
 		-D		: Delete space, 結果を間隔なしで結合
-		
 ```
 
 `num` は1~9までしか対応していないので注意

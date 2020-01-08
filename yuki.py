@@ -23,7 +23,8 @@ import func
 with open("Grammar.lark",encoding="utf-8") as grammar:
     LP = Lark(grammar.read(),start="script")
 
-result = None
+result = []
+subshcount = 0
 
 class T(Transformer):
     def __init__(self):
@@ -36,29 +37,28 @@ class T(Transformer):
         self.qflag = False
 
     def sentence(self,tree):
-        global result, tootdata
+        global result, tootdata, subshcount
         command = self._command.pop()
         try: option = self._option.pop()
         except: option = None
         try:
-            if command == None:
-                pass
+            if command == None: pass
             elif (command == "imgedit") and ("u" in option): 
                 media_url = tootdata["media_attachments"][0]["url"]
-                result = eval(f"func.imgedit(None,'{option}{media_url}')",globals())
+                result.append(eval(f"func.imgedit(None,'{option}{media_url}')",globals()))
             elif command == "insert":
-                result = eval(f"=func.insert('{' '.join(self._args)}','{option}','{result}')",globals(),locals())
+                result.append(eval(f"=func.insert('{' '.join(self._args)}','{option}','{result}')",globals(),locals()))
             elif (command == "replace") and (result):
-                result = eval(f"func.replace(self._args,'{option}',result)",globals(),locals())
+                result.append(eval(f"func.replace(self._args,'{option}',result)",globals(),locals()))
             elif command == "replace":
-                result = eval(f"func.replace(self._args,'{option}')",globals(),locals())
-            elif result:
-                result = eval(f"func.{command}('{result}','{option}')",globals(),globals())
+                result.append(eval(f"func.replace(self._args,'{option}')",globals(),locals()))
+            elif result and not(None in result):
+                result.append(eval(f"func.{command}(self._args,'{option}')",globals(),locals()))
             else:
-                result = eval(f"func.{command}(self._args,'{option}')",globals(),locals())
-        except IndexError as e:
-            pass
-        except Exception as e: result = str(e)
+                result.append(eval(f"func.{command}(self._args,'{option}')",globals(),locals()))
+        except IndexError as e: pass
+        except Exception as e:
+            result = str(e)
         self._args = []
     
     def allchars(self,tree):
@@ -75,23 +75,35 @@ class T(Transformer):
         except: self._option.append(None)
     
     def arg(self,tree):
-        try: self._args.append(tree[0].children[0].value)
+        global result
+        try:
+            for v in tree[0].children:
+                self._args.append(v.value)
         except: self._args = []
+        finally:
+            res = result
+            if res != None:
+                for r in res:
+                    if None in self._args:
+                        self._args[self._args.index(None)] = r
+                        result.remove(r)
     
     def chunk(self,tree):
         global result
         if (type(result) is str):
             self._chunk_res.append(result)
             #if result != 0:
-            result = ""
+            result.pop()
 
     def subshell(self,tree):
-        self._chunk_res.pop()
+        global result,subshcount
+        try: self._chunk_res.pop()
+        except: pass
     
     def script(self,tree):
         global result
         if type(result) is str:
-            result = "".join(self._chunk_res)
+            result.append("".join(self._chunk_res))
 
 
 
@@ -107,9 +119,9 @@ def anniv():
     d = t.day
     raw = wikipedia.page(f"{m}月{d}日").content
     tmp = raw[raw.find("== 記念日")+15:]
-    list = tmp[:tmp.find("\n\n\n==")].split("\n")
+    list_ = tmp[:tmp.find("\n\n\n==")].split("\n")
     text = ""
-    for part in list:
+    for part in list_:
         if (len(text)+len(part)) < 499:
             text += (part + "\n")
         else:
@@ -167,7 +179,7 @@ class MastodonStreamListener(StreamListener):
             try: 
                 tree = LP.parse(shaped)
                 #print(tree.pretty())
-                result = None
+                result = []
                 T().transform(tree)
             except Exception as e: result = f"Syntax err:※{str(e)}"
             
@@ -177,7 +189,7 @@ class MastodonStreamListener(StreamListener):
                         mastodon.status_post(status="何か用？",in_reply_to_id=toot["id"])
                     else:
                         if len(result) < 501:
-                            mastodon.status_post(status=result,in_reply_to_id=toot["id"],spoiler_text="result")
+                            mastodon.status_post(status="".join(result),in_reply_to_id=toot["id"],spoiler_text="result")
                         else:
                             mastodon.status_post(status="結果が500文字を超えてます",in_reply_to_id=toot["id"])
                 else: # 出力が画像の場合
