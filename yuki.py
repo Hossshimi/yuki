@@ -123,7 +123,10 @@ def transformer(pret):
             try:
                 return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
             except:
-                return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+                try:
+                    return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+                except:
+                    return eval(f"func.{cmd_}('None','None')",globals(),locals())
 
     list_ = pret.split("\n")
     return script(1)
