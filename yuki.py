@@ -280,10 +280,11 @@ class MastodonStreamListener(StreamListener):
 
             try: 
                 tree = LP.parse(shaped)
-                #print(tree.pretty())
-                result = []
-                T().transform(tree)
-            except Exception as e: result = f"Syntax err:※{str(e)}"
+                pret = tree.pretty(indent_str=" ")
+                #print(pret)
+                result = transformer(pret)
+            except Exception as e:
+                result = f"Syntax err:※{str(e)}"
             
             try:
                 if result != 0: # 出力が文字列の場合
