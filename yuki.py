@@ -17,16 +17,118 @@ import func
 
 
 
-#VERSION = "dev-1.0.0"
-
-
 with open("Grammar.lark",encoding="utf-8") as grammar:
     LP = Lark(grammar.read(),start="script")
 
-result = []
+result = ""
+list_ = []
 subshcount = 0
+cmd_ = ""
+opt_ = {}
+arg_ = {}
+pflag0 = False
+pflag1 = False
+subshflag = False
 
-class T(Transformer):
+def transformer(pret):
+    global result, list_, cmd_, opt_, arg_
+    result = ""
+    list_ = []
+    cmd_ = ""
+    opt_ = {}
+    arg_ = {}
+
+    def depthcount(string):
+        fi = re.finditer(r" ",string)
+        return str(len(list(fi)))
+
+    def script(index):
+        if "chunk" in list_[index]:
+            return chunk(index+1)
+    
+    def chunk(index):
+        global result, pflag0
+        if "sentence" in list_[index]:
+            #tmp = sentence(index+1)
+            #if pflag0:
+            #    result = tmp
+            return sentence(index+1)
+        elif "subshell" in list_[index]:
+            return script(index+1)
+    
+    def sentence(index):
+        global cmd_, opt_, arg_, result, subshflag, pflag0, pflag1
+        for i,elm in enumerate(list_[index:]):
+            try:
+                if "pipe" in list_[index+i+1]:
+                    pflag0 = True
+            except:
+                break
+            if "command" in elm:
+                cmd_ = list_[index+i+1].split("\t")[1]
+                #cdelflag = True
+            elif "option" in elm:
+                if not (depthcount(list_[index+i+1]) in opt_):
+                    opt_[depthcount(list_[index+i+1])] = []
+                #if "subshell" in l[i+1]:
+                #    opt_[depthcount(l[i+1])].append(script(l[i+2:]))
+                #else:
+                opt_[depthcount(list_[index+i+1])].append(list_[index+i+1].split("\t")[1])
+                list_[index+i] = ""
+            elif "arg" in elm:
+                if not (depthcount(list_[index+i+1]) in arg_):
+                    arg_[depthcount(list_[index+i+1])] = []
+                #if "subshell" in l[i+1]:
+                #    arg_[depthcount(l[i+1])].append(script(l[i+2:]))
+                #else:
+                try:
+                    arg_[depthcount(list_[index+i+1])].append(list_[index+i+1].split("\t")[1])
+                except:
+                    pass
+                list_[index+i] = ""
+            elif ("chars" in elm) and ("pipe" in list_[index+i+1]):
+                pflag0 = True
+                tmp = index+i
+                break
+            #elif ("chars" in elm) and \
+            #    (("subshell" in l[i+1])or("join" in l[i+1])or("pipe" in l[i+1])or("chars" in l[i+1])):
+            #    break
+            elif "subshell" in elm:
+                arg_[depthcount(list_[index+1])].append(script(index+i+2))
+            elif ("chars" in list_[index+i]) and ("chars" in list_[index+i-1]):
+                if subshflag:
+                    arg_[depthcount(list_[index+i])].append(list_[index+i].split("\t")[1])
+                    list_[index+i] = ""
+                    subshflag = False
+                else:
+                    subshflag = True
+                break
+            #elif "sentence" in list_[index+i]
+        if pflag0:
+            try:
+                result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
+            except:
+                result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+            finally:
+                pflag0 = False
+                pflag1 = True
+                return sentence(tmp+2)
+        elif pflag1:
+            pflag1 = False
+            try:
+                return eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}')",globals(),locals())
+            except:
+                return eval(f"func.{cmd_}(result,'None')",globals(),locals())
+        else:
+            try:
+                return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
+            except:
+                return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+
+    list_ = pret.split("\n")
+    return script(1)
+
+"""class T(Transformer):
     def __init__(self):
         global result
         self._command = []
@@ -103,7 +205,7 @@ class T(Transformer):
     def script(self,tree):
         global result
         if type(result) is str:
-            result.append("".join(self._chunk_res))
+            result.append("".join(self._chunk_res))"""
 
 
 

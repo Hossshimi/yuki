@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 1.0.3"
+VERSION = "yuki 2.0.0"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -27,7 +27,7 @@ def say(arg,option="None"):
     #if type(arg) is str:
     #    return arg
     if type(arg) is list:
-        return " ".join(arg)
+        return "".join(arg)
     elif type(arg) is str:
         return arg
     else:

@@ -2,12 +2,12 @@ script : [chunk join] chunk
 
 chunk : [(sentence pipe)+] sentence
 
-sentence : command [space option] [(space arg)+] [/\n+/]
+sentence : command [" "+ option] [(" "+ arg)+] [/\n+/]
 
 command : chars
         | ([chars] subshell [chars])+
 option : "-" (chars|subshell)+
-arg : chars
+arg : chars [(" " chars)+]
     | "'" allchars "'"
     | ([chars] subshell [chars])+
 
@@ -15,6 +15,5 @@ subshell : "(" script ")" [/\n+/]
 
 chars : /[^\+\|\s\(\)']+/[/\n+/]
 allchars : /[^']+/[/\n+/]
-space : " "
-join : [space] "+" [space]
-pipe : [space] "|" [space]
+join : [" "+] "+" [" "+]
+pipe : [" "+] "|" [" "+]
