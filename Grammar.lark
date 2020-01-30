@@ -13,7 +13,7 @@ arg : chars [(" " chars)+]
 
 subshell : "(" script ")" [/\n+/]
 
-chars : /[^\+\|\s\(\)']+/[/\n+/]
+chars : /[^\+\|\s\(\)-']+/[/\n+/]
 allchars : /[^']+/[/\n+/]
 join : [" "+] "+" [" "+]
 pipe : [" "+] "|" [" "+]
