@@ -78,11 +78,13 @@ def transformer(pret):
             elif "arg" in elm:
                 if not (depthcount(list_[index+i+1]) in arg_):
                     arg_[depthcount(list_[index+i+1])] = []
-                #if "subshell" in l[i+1]:
-                #    arg_[depthcount(l[i+1])].append(script(l[i+2:]))
-                #else:
                 try:
                     arg_[depthcount(list_[index+i+1])].append(list_[index+i+1].split("\t")[1])
+                    for i_,el in enumerate(list_[index+i+2:]):
+                        if ("chars" in el)and(depthcount(list_[index+i+2+i_])==depthcount(list_[index+i+1])):
+                            arg_[depthcount(list_[index+i+2+i_])].append(list_[index+i+2+i_].split("\t")[1])
+                        else: 
+                            break
                 except:
                     pass
                 list_[index+i] = ""
@@ -94,8 +96,8 @@ def transformer(pret):
             #    (("subshell" in l[i+1])or("join" in l[i+1])or("pipe" in l[i+1])or("chars" in l[i+1])):
             #    break
             elif "subshell" in elm:
-                arg_[depthcount(list_[index+1])].append(script(index+i+2))
-            elif ("chars" in list_[index+i]) and ("chars" in list_[index+i-1]):
+                arg_[depthcount(list_[index+2])].append(script(index+i+2))
+            elif ("chars" in list_[index+i])and("chars" in list_[index+i-1])and(depthcount(list_[index+i])!=depthcount(list_[index+i-1])):
                 if subshflag:
                     arg_[depthcount(list_[index+i])].append(list_[index+i].split("\t")[1])
                     list_[index+i] = ""
@@ -104,30 +106,63 @@ def transformer(pret):
                     subshflag = True
                 break
             #elif "sentence" in list_[index+i]
-        if pflag0:
+        if pflag0 and pflag1:
             try:
-                result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
+                if "insert" in cmd_:
+                    result = eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}',''.join(arg_[depthcount(list_[index+2])]))",globals(),locals())
+                else:
+                    result = eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}')",globals(),locals())
             except:
-                result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+                result = eval(f"func.{cmd_}(result,'None')",globals(),locals())
             finally:
+                try:
+                    arg_[depthcount(list_[index+2])].clear()
+                    opt_[depthcount(list_[index+2])].clear()
+                except:
+                    pass
                 pflag0 = False
                 pflag1 = True
                 return sentence(tmp+2)
+        elif pflag0:
+            try:
+                result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
+            except:
+                try:
+                    result = eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
+                except:
+                    result = eval(f"func.{cmd_}('None','None')",globals(),locals())
+            finally:
+                try:
+                    arg_[depthcount(list_[index+1])].clear()
+                    opt_[depthcount(list_[index+1])].clear()
+                except:
+                    pass
+                pflag0 = False
+                pflag1 = True
+                try:
+                    return sentence(tmp+2)
+                except:
+                    pass
         elif pflag1:
             pflag1 = False
             try:
-                return eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}')",globals(),locals())
+                if "insert" in cmd_:
+                    return eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}',''.join(arg_[depthcount(list_[index+2])]))",globals(),locals())
+                else:
+                    return eval(f"func.{cmd_}(result,'{''.join(opt_[depthcount(list_[index+2])])}')",globals(),locals())
             except:
                 return eval(f"func.{cmd_}(result,'None')",globals(),locals())
         else:
             try:
-                return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
+                return eval(f"func.{cmd_}((arg_[depthcount(list_[index+1])]),'{''.join(opt_[depthcount(list_[index+1])])}')",globals(),locals())
             except:
                 try:
                     return eval(f"func.{cmd_}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
                 except:
                     return eval(f"func.{cmd_}('None','None')",globals(),locals())
-
+            finally:
+                arg_[depthcount(list_[index+2])].clear()
+                opt_[depthcount(list_[index+2])].clear()
     list_ = pret.split("\n")
     return script(1)
 

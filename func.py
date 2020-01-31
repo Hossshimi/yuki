@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.0.2"
+VERSION = "yuki 2.0.3"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -254,7 +254,7 @@ def replace(arg,option="None",in_data=None):
 #    else:
 #        raise Exception("err:varget:無効な変数番号")
 
-def zwsp():
+def zwsp(*args):
     return chr(8203)
 
 def n2c(data,option="None"):
@@ -278,7 +278,7 @@ def insert(data,option="None",in_data="None"):
         raise Exception("err:insert:挿入位置の指定なし")
     if type(data) is list:
         data = " ".join(data)
-    if (len(option) > 3) and (option[1] == "-"):
+    if (len(option) > 1) and (option[1] == "-"):
         if option[1:].isnumeric():
             index = int(option[1:])
         else:
@@ -287,7 +287,7 @@ def insert(data,option="None",in_data="None"):
         index = int(option)
     else:
         raise Exception("err:insert:無効なインデックス指定")
-    l = list(in_data)
-    l.insert(index,data)
+    l = list(data)
+    l.insert(index,in_data)
     result = "".join(l)
     return result
