@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.0.3"
+VERSION = "yuki 2.0.5"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -256,6 +256,9 @@ def replace(arg,option="None",in_data=None):
 
 def zwsp(*args):
     return chr(8203)
+
+def lf(*args):
+    return "\n"
 
 def n2c(data,option="None"):
     if not data:
