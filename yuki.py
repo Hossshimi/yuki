@@ -26,7 +26,7 @@ subshflag = False
 def transformer(pret):
     global list_
     list_ = []
-    tmp = None
+    #tmp = None
 
     def depthcount(string):
         fi = re.finditer(r" ",string)
@@ -59,6 +59,8 @@ def transformer(pret):
             arg_ = []
             lpcnt = 0
             for _ in list_[index+count:]:
+                if subshflag and (int(depthcount(list_[index+count])) - int(depthcount(list_[index+count+1])) > 3):
+                    endflag = True
                 try:
                     if list_[index+count+3]:
                         pass
@@ -95,7 +97,9 @@ def transformer(pret):
                         pass
                     list_[index+count] = ""
                 elif "subshell" in list_[index+count]:
+                    subshflag = True
                     arg_.append(script(index+count+2))
+                    subshflag = False
                 elif ("chars" in list_[index+count])and("chars" in list_[index+count-1])and(depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
                     if subshflag:
                         arg_.append(list_[index+count].split("\t")[1])
@@ -296,7 +300,7 @@ class MastodonStreamListener(StreamListener):
                 #print(pret)
                 result = transformer(pret)
             except Exception as e:
-                result = f"Syntax err:※{str(e)}"
+                result = f"err:※{str(e)}"
             
             try:
                 if result != 0: # 出力が文字列の場合

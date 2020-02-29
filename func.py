@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.1.0"
+VERSION = "yuki 2.1.1"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -300,6 +300,6 @@ def insert(data,option="None",in_data="None"):
     else:
         raise Exception("err:insert:無効なインデックス指定")
     l = list(data)
-    l.insert(index,in_data)
+    l.insert(index,in_data[0])
     result = "".join(l)
     return result
