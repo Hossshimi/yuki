@@ -201,6 +201,8 @@ replace [-option] <arg> <old> <new> [count]
 		-r : regular expressions, oldの指定を正規表現で行う
 ```
 
+`count` で置換回数を指定できます(指定無しの場合全て置換)
+
 他のコマンドから `|` で引数をとった場合、`arg` の位置に挿入されます
 
 

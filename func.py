@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.0.5"
+VERSION = "yuki 2.1.0"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -201,22 +201,31 @@ def drum(arg,option="None"):
         text = "【" + " ".join(arg) + "】"
     return text + "\n\n　　　 　}二二{\n　　　 　}二二{\n　　 　　}二二{\n  　  　　  /   ／⌒)\n　　　　| ／ /　/\n　　　　ヽ_｜ /\n　　　　  / ｜｜\n　　　　/　(＿＼\n　　　／ ／　 ﾋﾉ\n　　  / ／\n　　`( ｜\n　  　L/"
 
-def replace(arg,option="None",in_data=None):
+def replace(arg,option=None,in_data=None):
     count = None
-    #if type(arg) is str:
-    #    data = arg.split(" ")
-    if in_data: arg.insert(0,in_data)
     try:
-        if option != "None": opt = option
+        if option and (option != "None"): opt = option
         else: opt = ""
-        text = arg[0]
-        old = arg[1]
-        if "d" in opt: new = ""
-        else: new = arg[2]
-        if len(arg) == 4:
-            count = int(arg[3])
+        if type(arg) is list:
+            if in_data: arg.insert(0,in_data)
+            text = arg[0]
+            old = arg[1]
+            new = arg[2]
+            try: count = arg[3]
+            except: pass
+        else:
+            text = arg
+            old = in_data[0]
+            if "d" in opt:
+                new = ""
+                try: count = in_data[1]
+                except: pass
+            else:
+                new = in_data[1]
+                try: count = in_data[2]
+                except: pass
     except Exception:
-        raise Exception("err:replace:引数が足りません")
+        raise Exception("err:replace:引数エラー")
     if "r" in opt:
         replaced = re.sub(old,new,text)
     else:

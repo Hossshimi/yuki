@@ -20,24 +20,13 @@ import func
 with open("Grammar.lark",encoding="utf-8") as grammar:
     LP = Lark(grammar.read(),start="script")
 
-result = ""
 list_ = []
-subshcount = 0
-#cmd_ = {}
-#opt_ = {}
-#arg_ = {}
-#pflag0 = False
-#pflag1 = False
 subshflag = False
-tmp = None
 
 def transformer(pret):
-    global result, list_
-    result = ""
+    global list_
     list_ = []
-    #cmd_ = {}
-    #opt_ = {}
-    #arg_ = {}
+    tmp = None
 
     def depthcount(string):
         fi = re.finditer(r" ",string)
@@ -48,206 +37,106 @@ def transformer(pret):
             return chunk(index+1)
     
     def chunk(index):
-        global result, pflag0
+        global result
         if "sentence" in list_[index]:
-            #tmp = sentence(index+1)
-            #if pflag0:
-            #    result = tmp
             return sentence(index+1)
         elif "subshell" in list_[index]:
             return script(index+1)
     
-    def sentence(index,pflg=False):
-        global result, subshflag,tmp
-        cmd_ = ""
+    def sentence(index,pflg=False,res=None):
+        global result, subshflag
+        
+        cmd_ = []
         opt_ = ""
         arg_ = []
-        pflag0 = False
-        pflag1 = False
-        pf = False
-        tmp = None
-        for i,elm in enumerate(list_[index:]):
-            try:
-                if "pipe" in list_[index+i+1]:
-                    pflag0 = True
-            except:
-                break
-            if "command" in elm:
-                #if not (depthcount(list_[index+i+1]) in cmd_):
-                #    cmd_[depthcount(list_[index+i+1])] = ""
-                #if "subshell" in l[i+1]:
-                #    opt_[depthcount(l[i+1])].append(script(l[i+2:]))
-                #else:
-                #cmd_[depthcount(list_[index+i+1])] = list_[index+i+1].split("\t")[1]
-                cmd_ = list_[index+i+1].split("\t")[1]
-                if cmd_ == "":
-                    return None
-                list_[index+i] = ""
-            elif "option" in elm:
-                #if not (depthcount(list_[index+i+1]) in opt_):
-                #    opt_[depthcount(list_[index+i+1])] = []
-                #if "subshell" in l[i+1]:
-                #    opt_[depthcount(l[i+1])].append(script(l[i+2:]))
-                #else:
-                #opt_[depthcount(list_[index+i+1])].append(list_[index+i+1].split("\t")[1])
-                opt_ = list_[index+i+1].split("\t")[1]
-                list_[index+i] = ""
-            elif ("chars" in elm) and ("pipe" in list_[index+i+1]):
-                pf = True
-                tmp = index+i
-                break
-            elif "arg" in elm:
-                #if not (depthcount(list_[index+i+1]) in arg_):
-                #    arg_[depthcount(list_[index+i+1])] = []
-                #try:
-                #    arg_[depthcount(list_[index+i+1])].append(list_[index+i+1].split("\t")[1])
-                #    for i_,el in enumerate(list_[index+i+2:]):
-                #        if ("chars" in el)and(depthcount(list_[index+i+2+i_])==depthcount(list_[index+i+1])):
-                #            arg_[depthcount(list_[index+i+2+i_])].append(list_[index+i+2+i_].split("\t")[1])
-                #        elif depthcount(list_[index+i+1+i_]) < depthcount(list_[index+i+2+i_]):
-                #            pass
-                #        else: 
-                #            break
-                #except:
-                #    pass
+        pf = 0
+        endflag = False
+        count = 0
+        lpcnt = 0
+        tmp = ""
+        while not(endflag):
+            opt_ = ""
+            arg_ = []
+            lpcnt = 0
+            for _ in list_[index+count:]:
                 try:
-                    arg_.append(list_[index+i+1].split("\t")[1])
-                    for i_,el in enumerate(list_[index+i+2:]):
-                        if ("chars" in el)and(depthcount(list_[index+i+2+i_])==depthcount(list_[index+i+1])):
-                            arg_.append(list_[index+i+2+i_].split("\t")[1])
-                        elif depthcount(list_[index+i+1]) < depthcount(list_[index+i+2+i_]):
-                            pass
-                        else: 
-                            break
+                    if list_[index+count+3]:
+                        pass
                 except:
-                    pass
-                list_[index+i] = ""
-            #elif ("chars" in elm) and \
-            #    (("subshell" in l[i+1])or("join" in l[i+1])or("pipe" in l[i+1])or("chars" in l[i+1])):
-            #    break
-            elif "subshell" in elm:
-                #if not (depthcount(list_[index+1]) in arg_):
-                #    arg_[depthcount(list_[index+1])] = []
-                #arg_[depthcount(list_[index+1])].append(script(index+i+2))
-                arg_.append(script(index+i+2))
-            elif ("chars" in list_[index+i])and("chars" in list_[index+i-1])and(depthcount(list_[index+i])!=depthcount(list_[index+i-1])):
-                if subshflag:
-                    #arg_[depthcount(list_[index+i])].append(list_[index+i].split("\t")[1])
-                    arg_.append(list_[index+i].split("\t")[1])
-                    list_[index+i] = ""
-                    subshflag = False
-                else:
-                    subshflag = True
-                break
-        if pflg:
-            try:
-                if "insert" in cmd_:
-                    result = eval(f"func.insert(result,opt_,''.join(arg_))",globals(),locals())
-                else:
-                    result = eval(f"func.{cmd_}(result,opt_)",globals(),locals())
-            except:
-                result = eval(f"func.{cmd_}(result,'None')",globals(),locals())
-            finally:
-                list_[index-1] = ""
+                    endflag = True
+                    break
+                if "command" in list_[index+count]:
+                    cmd_.append(list_[index+count+1].split("\t")[1])
+                    if cmd_[-1] == "":
+                        return None
+                    list_[index+count] = ""
+                elif "option" in list_[index+count]:
+                    opt_ = list_[index+count+1].split("\t")[1]
+                    list_[index+count] = ""
+                elif ("chars" in list_[index+count]) and ("pipe" in list_[index+count+1]):
+                    if pf == 1:
+                        pf = 2
+                    elif pf == 0:
+                        pf = 1
+                    count += 1
+                    lpcnt += 1
+                    break
+                elif "arg" in list_[index+count]:
+                    try:
+                        arg_.append(list_[index+count+1].split("\t")[1])
+                        for i_,el in enumerate(list_[index+count+2:]):
+                            if ("chars" in el)and(depthcount(list_[index+count+2+i_])==depthcount(list_[index+count+1])):
+                                arg_.append(list_[index+count+2+i_].split("\t")[1])
+                            elif depthcount(list_[index+count+1]) < depthcount(list_[index+count+2+i_]):
+                                pass
+                            else: 
+                                break
+                    except:
+                        pass
+                    list_[index+count] = ""
+                elif "subshell" in list_[index+count]:
+                    arg_.append(script(index+count+2))
+                elif ("chars" in list_[index+count])and("chars" in list_[index+count-1])and(depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
+                    if subshflag:
+                        arg_.append(list_[index+count].split("\t")[1])
+                        list_[index+count] = ""
+                        subshflag = False
+                    else:
+                        subshflag = True
+                    count += 1
+                    lpcnt += 1
+                    break
+                count += 1
+                lpcnt += 1
+            if (pf == 2) and cmd_:
                 try:
-                    return sentence(tmp+2,pf)
+                    if ("insert" in cmd_[-1]) or ("replace" in cmd_[-1]):
+                        tmp = eval(f"func.{cmd_[-1]}(tmp,opt_,arg_)")
+                        cmd_.pop()
+                    else:
+                        tmp = eval(f"func.{cmd_[-1]}(tmp,opt_)")
+                        cmd_.pop()
                 except:
-                    return result
-        else:
-            try:
-                if "insert" in cmd_:
-                    result =  eval(f"func.insert(result,opt_,''.join(arg_))",globals(),locals())
-                else:
-                    result = eval(f"func.{cmd_}(arg_,opt_)",globals(),locals())
-            except:
-                result = eval(f"func.{cmd_}(arg_,'None')",globals(),locals())
-            finally:
-                list_[index-1] = ""
+                    tmp = eval(f"func.{cmd_[-1]}(tmp,'None')")
+                    cmd_.pop()
+                finally:
+                    list_[index+count-lpcnt-1] = ""
+            elif cmd_:
                 try:
-                    return sentence(tmp+2,pf)
+                    if ("insert" in cmd_[-1]):
+                        tmp =  eval(f"func.insert(tmp,opt_,' '.join(arg_))")
+                    else:
+                        tmp = eval(f"func.{cmd_[-1]}(arg_,opt_)")
+                        cmd_.pop()
                 except:
-                    return result
-        #if pflag0 and pflag1:
-        #    try:
-        #        if "insert" in cmd_:
-        #            result = eval(f"func.insert(result,opt_,''.join(arg_))",globals(),locals())
-        #            #result = eval(f"func.insert(result,'{opt_[depthcount(list_[index+2])][0]}',''.join(arg_[depthcount(list_[index+2])]))",globals(),locals())
-        #        else:
-        #            result = eval(f"func.{cmd_}(result,opt_)",globals(),locals())
-        #            #result = eval(f"func.{cmd_[depthcount(list_[index+2])]}(result,'{''.join(opt_[depthcount(list_[index+2])])}')",globals(),locals())
-        #    except:
-        #        result = eval(f"func.{cmd_[depthcount(list_[index+2])]}(result,'None')",globals(),locals())
-        #    finally:
-        #        list_[index-1] = ""
-        #        #try:
-        #        #    arg_[depthcount(list_[index+2])].clear()
-        #        #    opt_[depthcount(list_[index+2])].pop()
-        #        #except:
-        #        #    pass
-        #        pflag0 = False
-        #        pflag1 = True
-        #        try:
-        #            return sentence(tmp+2)
-        #        except:
-        #            pass
-        #elif pflag0:
-        #    try:
-        #        #result = eval(f"func.{cmd_[depthcount(list_[index+1])]}(arg_[depthcount(list_[index+1])],'{opt_[depthcount(list_[index+1])][0]}')",globals(),locals())
-        #        result = eval(f"func.{cmd_}(arg_,'{opt_}')",globals(),locals())
-        #    except:
-        #        try:
-        #            #result = eval(f"func.{cmd_[depthcount(list_[index+1])]}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
-        #            result = eval(f"func.{cmd_}(arg_,'None')",globals(),locals())
-        #        except:
-        #            #result = eval(f"func.{cmd_[depthcount(list_[index+1])]}('None','None')",globals(),locals())
-        #            result = eval(f"func.{cmd_}('None','None')",globals(),locals())
-        #    finally:
-        #        list_[index-1] = ""
-        #        #try:
-        #        #    del cmd_[depthcount(list_[index+1])]
-        #        #except: pass
-        #        #try:
-        #        #    arg_[depthcount(list_[index+1])].clear()
-        #        #except: pass
-        #        pflag0 = False
-        #        pflag1 = True
-        #        try:
-        #            return sentence(tmp+3)
-        #        except:
-        #            pass
-        #elif pflag1:
-        #    pflag1 = False
-        #    try:
-        #        if "insert" in cmd_:
-        #            #return eval(f"func.insert(result,'{opt_[depthcount(list_[index+2])][0]}',''.join(arg_[depthcount(list_[index+2])]))",globals(),locals())
-        #            return eval(f"func.insert(result,opt_,''.join(arg_))",globals(),locals())
-        #
-        #        else:
-        #            #return eval(f"func.{cmd_[depthcount(list_[index+2])]}(result,'{opt_[depthcount(list_[index+2])].pop(0)}')",globals(),locals())
-        #            return eval(f"func.{cmd_}(result,opt_)",globals(),locals())
-        #    except:
-        #        #return eval(f"func.{cmd_[depthcount(list_[index+2])]}(result,'None')",globals(),locals())
-        #        return eval(f"func.{cmd_}(result,'None')",globals(),locals())
-        #else:
-        #    try:
-        #        #return eval(f"func.{cmd_[depthcount(list_[index+1])]}((arg_[depthcount(list_[index+1])]),'{opt_[depthcount(list_[index+1])].pop(0)}')",globals(),locals())
-        #        return eval(f"func.{cmd_}((arg_),opt_)",globals(),locals())
-        #    except:
-        #        try:
-        #            #return eval(f"func.{cmd_[depthcount(list_[index+1])]}(arg_[depthcount(list_[index+1])],'None')",globals(),locals())
-        #            return eval(f"func.{cmd_}(arg_,'None')",globals(),locals())
-        #        except:
-        #            try:
-        #                #return eval(f"func.{cmd_[depthcount(list_[index+1])]}('None','None')",globals(),locals())
-        #                return eval(f"func.{cmd_}('None','None')",globals(),locals())
-        #            except: pass
-        #    list_[index-1] = ""
-            #try:
-            #    del cmd_[depthcount(list_[index+1])]
-            #except: pass
-            #try:
-            #    arg_[depthcount(list_[index+1])].clear()
-            #except: pass
+                    tmp = eval(f"func.{cmd_[-1]}(arg_,'None')")
+                    cmd_.pop()
+                finally:
+                    list_[index+count-lpcnt-1] = ""
+            if pf == 1:
+                pf = 2
+        return tmp
+
     list_ = pret.split("\n")
     return script(1)
 
@@ -415,7 +304,7 @@ class MastodonStreamListener(StreamListener):
                         mastodon.status_post(status="何か用？",in_reply_to_id=toot["id"])
                     else:
                         if len(result) < 501:
-                            mastodon.status_post(status="".join(result),in_reply_to_id=toot["id"],spoiler_text="result")
+                            mastodon.status_post(status=result,in_reply_to_id=toot["id"],spoiler_text="result")
                         else:
                             mastodon.status_post(status="結果が500文字を超えてます",in_reply_to_id=toot["id"])
                 else: # 出力が画像の場合
