@@ -116,25 +116,31 @@ def transformer(pret):
                 try:
                     if ("insert" in cmd_[-1]) or ("replace" in cmd_[-1]):
                         tmp = eval(f"func.{cmd_[-1]}(tmp,opt_,arg_)")
-                        cmd_.pop()
+                        del cmd_[-1]
+                    elif "imgedit" in cmd_[-1]:
+                        tmp = eval(f"func.imgedit(None,opt_,tootdata[\"media_attachments\"][\"url\"])")
+                        del cmd_[-1]
                     else:
                         tmp = eval(f"func.{cmd_[-1]}(tmp,opt_)")
-                        cmd_.pop()
+                        del cmd_[-1]
                 except:
                     tmp = eval(f"func.{cmd_[-1]}(tmp,'None')")
-                    cmd_.pop()
+                    del cmd_[-1]
                 finally:
                     list_[index+count-lpcnt-1] = ""
             elif cmd_:
                 try:
                     if ("insert" in cmd_[-1]):
                         tmp =  eval(f"func.insert(tmp,opt_,' '.join(arg_))")
+                    elif "imgedit" in cmd_[-1]:
+                        tmp = eval(f"func.imgedit(None,opt_,tootdata[\"media_attachments\"][0][\"url\"])")
+                        del cmd_[-1]
                     else:
                         tmp = eval(f"func.{cmd_[-1]}(arg_,opt_)")
-                        cmd_.pop()
+                        del cmd_[-1]
                 except:
                     tmp = eval(f"func.{cmd_[-1]}(arg_,'None')")
-                    cmd_.pop()
+                    del cmd_[-1]
                 finally:
                     list_[index+count-lpcnt-1] = ""
             if pf == 1:
@@ -287,7 +293,7 @@ class Parser(HTMLParser):
 
 class MastodonStreamListener(StreamListener):
     def on_update(self,toot): # タイムラインが更新されたときの動作
-        if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="inori"):
+        if ("yuki_kawaiuniv" in toot["content"]) and not(toot["account"]["acct"]=="yuki"):
             global mastodon, result, tootdata
             tootdata = toot
 

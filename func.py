@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.1.1"
+VERSION = "yuki 2.1.2"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -116,15 +116,17 @@ def rand(arg,option="None"):
     
     return result
 
-def imgedit(arg,option):  
+def imgedit(arg,option,url):  
     mode = option
     if "u" in mode:
         try:
-            with urllib.request.urlopen(mode[mode.index("h"):]) as media:
+            with urllib.request.urlopen(url) as media:
                 data = media.read()
-                with open("img.png","wb") as f:
-                    f.write(data)
-            mode = mode[:mode.index("h")]
+            with open("img.png","wb") as f:
+                f.write(data)
+            tmp = list(mode)
+            tmp.remove("u")
+            mode = "".join(tmp)
         except:
             raise Exception("err:imgedit:画像取得エラー")
     img = Image.open("img.png").convert("RGB")
