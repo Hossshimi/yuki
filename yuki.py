@@ -117,8 +117,11 @@ def transformer(pret):
                     if ("insert" in cmd_[-1]) or ("replace" in cmd_[-1]):
                         tmp = eval(f"func.{cmd_[-1]}(tmp,opt_,arg_)")
                         del cmd_[-1]
-                    elif "imgedit" in cmd_[-1]:
+                    elif ("imgedit" in cmd_[-1]) and ("u" in opt_):
                         tmp = eval(f"func.imgedit(None,opt_,tootdata[\"media_attachments\"][\"url\"])")
+                        del cmd_[-1]
+                    elif "imgedit" in cmd_[-1]:
+                        tmp = eval(f"func.imgedit(None,opt_)")
                         del cmd_[-1]
                     else:
                         tmp = eval(f"func.{cmd_[-1]}(tmp,opt_)")
@@ -132,8 +135,11 @@ def transformer(pret):
                 try:
                     if ("insert" in cmd_[-1]):
                         tmp =  eval(f"func.insert(tmp,opt_,' '.join(arg_))")
+                    elif ("imgedit" in cmd_[-1]) and ("u" in opt_):
+                        tmp = eval(f"func.imgedit(None,opt_,tootdata[\"media_attachments\"][\"url\"])")
+                        del cmd_[-1]
                     elif "imgedit" in cmd_[-1]:
-                        tmp = eval(f"func.imgedit(None,opt_,tootdata[\"media_attachments\"][0][\"url\"])")
+                        tmp = eval(f"func.imgedit(None,opt_)")
                         del cmd_[-1]
                     else:
                         tmp = eval(f"func.{cmd_[-1]}(arg_,opt_)")
