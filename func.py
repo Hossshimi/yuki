@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.1.2"
+VERSION = "yuki 2.1.3"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -116,7 +116,7 @@ def rand(arg,option="None"):
     
     return result
 
-def imgedit(arg,option,url):  
+def imgedit(arg,option,url=None):  
     mode = option
     if "u" in mode:
         try:
