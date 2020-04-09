@@ -61,6 +61,7 @@ def transformer(pret):
             for _ in list_[index+count:]:
                 if subshflag and (int(depthcount(list_[index+count])) - int(depthcount(list_[index+count+1])) > 3):
                     endflag = True
+                    break
                 try:
                     if list_[index+count+3]:
                         pass
@@ -100,13 +101,17 @@ def transformer(pret):
                     subshflag = True
                     arg_.append(script(index+count+2))
                     subshflag = False
-                elif ("chars" in list_[index+count])and("chars" in list_[index+count-1])and(depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
+                elif ("chars" in list_[index+count])and\
+                    ("chars" in list_[index+count-1])and\
+                    (depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
                     if subshflag:
                         arg_.append(list_[index+count].split("\t")[1])
                         list_[index+count] = ""
                         subshflag = False
                     else:
-                        subshflag = True
+                        #subshflag = True
+                        arg_.append(list_[index+count].split("\t")[1])
+                        list_[index+count] = ""
                     count += 1
                     lpcnt += 1
                     break

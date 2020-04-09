@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.1.5"
+VERSION = "yuki 2.1.6"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -135,8 +135,8 @@ def imgedit(arg,option,url=None):
         img_array = img_array.astype("int16")
         for i in range(img_array.shape[0]):
             for j in range(img_array.shape[1]):
-                flag = nprand.randint(100)
-                if flag > 80:
+                flag = nprand.randint(10)
+                if flag > 8:
                     noizdiff = (nprand.randn(3)*40).astype("int16")
                     img_array[i][j] += noizdiff
                     """rgb = img_array[i,j].astype("float")
