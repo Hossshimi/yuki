@@ -71,7 +71,7 @@ def transformer(pret):
                 if "command" in list_[index+count]:
                     cmd_.append(list_[index+count+1].split("\t")[1])
                     if cmd_[-1] == "":
-                        return None
+                        return ""
                     list_[index+count] = ""
                 elif "option" in list_[index+count]:
                     opt_ = list_[index+count+1].split("\t")[1]
@@ -85,38 +85,54 @@ def transformer(pret):
                     lpcnt += 1
                     break
                 elif "arg" in list_[index+count]:
+                    list_[index+count] = ""
                     try:
                         arg_.append(list_[index+count+1].split("\t")[1])
                         for i_,el in enumerate(list_[index+count+2:]):
-                            if ("chars" in el)and(depthcount(list_[index+count+2+i_])==depthcount(list_[index+count+1])):
-                                arg_.append(list_[index+count+2+i_].split("\t")[1])
-                            elif depthcount(list_[index+count+1]) < depthcount(list_[index+count+2+i_]):
-                                pass
-                            else: 
+                            if depthcount(el) < depthcount(list_[index+count+1]):
                                 break
+                            elif ("chars" in el)and(depthcount(el)==depthcount(list_[index+count+1])):
+                                arg_.append(el.split("\t")[1])
+                                list_[index+count+2+i_] = ""
+                            #elif depthcount(list_[index+count+1]) < depthcount(list_[index+count+2+i_]):
+                                #pass
+                            elif "subshell" in el:
+                                list_[index+count+2+i_] = ""
+                                subshflag = True
+                                arg_.append(script(index+count+4+i_))
+                                subshflag = False
+                                #break
+                            elif depthcount(el) == depthcount(list_[index+count+1]):
+                                if ("chars" in el):# and (depthcount(el)!=depthcount(list_[index+count+2+i_-1])):
+                                    arg_.append(el.split("\t")[1])
+                                    list_[index+count+2+i_] = ""
+                                else:
+                                    break
                     except:
                         pass
-                    list_[index+count] = ""
-                elif "subshell" in list_[index+count]:
-                    subshflag = True
-                    arg_.append(script(index+count+2))
-                    subshflag = False
-                elif ("chars" in list_[index+count])and\
-                    ("chars" in list_[index+count-1])and\
-                    (depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
-                    if subshflag:
-                        arg_.append(list_[index+count].split("\t")[1])
-                        list_[index+count] = ""
-                        subshflag = False
-                    else:
-                        #subshflag = True
-                        arg_.append(list_[index+count].split("\t")[1])
-                        list_[index+count] = ""
-                    count += 1
-                    lpcnt += 1
-                    break
+                    #list_[index+count] = ""
+                #elif "subshell" in list_[index+count]:
+                #    subshflag = True
+                #    arg_.append(script(index+count+2))
+                #    subshflag = False
+                #elif ("chars" in list_[index+count])and\
+                #    ("chars" in list_[index+count-1])and\
+                #    (depthcount(list_[index+count])!=depthcount(list_[index+count-1])):
+                #    if subshflag:
+                #        arg_.append(list_[index+count].split("\t")[1])
+                #        list_[index+count] = ""
+                #        subshflag = False
+                #    else:
+                #        #subshflag = True
+                #        arg_.append(list_[index+count].split("\t")[1])
+                #        list_[index+count] = ""
+                #    count += 1
+                #    lpcnt += 1
+                #    break
                 count += 1
                 lpcnt += 1
+            for _ in range(arg_.count(None)):
+                arg_.remove(None)
             if (pf == 2) and cmd_:
                 try:
                     if ("insert" in cmd_[-1]) or ("replace" in cmd_[-1]):
