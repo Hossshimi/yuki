@@ -90,9 +90,9 @@ def rand(arg,option="None"):
                 result = "\n".join(result)
 
     elif "i" in mode:
-        if len(ulist) == 0: pass
+        if len(ulist) < 2: raise Exception("err:rand:範囲指定が不完全")
         elif len(ulist) > 1:
-            result = str(random_.randint(ulist[0],ulist[1]))
+            res = str(random.randint(int(ulist[0]),int(ulist[1])))
 
     else:
         if ulist==None: pass
