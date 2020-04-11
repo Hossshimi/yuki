@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.1.7"
+VERSION = "yuki 2.1.8"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -277,8 +277,8 @@ def n2c(data,option="None"):
     if (type(data) is list) and (len(data)>1):
         raise Exception("err:n2c:無効な数値指定")
     elif type(data) is list: data = data[0]
-    if option == "-h": d = int(data,16)
-    elif option == "-d": d = int(data)
+    if option == "h": d = int(data,16)
+    elif option == "d": d = int(data)
     elif option: raise Exception("err:n2c:無効なオプション")
     else: d = int(data,16)
     return chr(d)
