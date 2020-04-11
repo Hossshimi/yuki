@@ -1,5 +1,5 @@
 #from mastodon import Mastodon
-import random as random_
+import random
 import re
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -59,13 +59,13 @@ def textimg(arg,option="None"):
     bg_.save("img.png")
     return 0
 
-def rand(arg,option="None"):
+def rand(arg,option=None):
     mode = "c"
     if type(arg) is str:
         ulist = arg.split()
     else:
         ulist = arg
-    if option != "None":
+    if option != None:
         mode = option
 
     if ("C" in mode): # Cオプションの場合
@@ -79,15 +79,15 @@ def rand(arg,option="None"):
         if len(ulist) < int(modev):
             raise Exception("err:rand:選択数が多すぎます")
         else:
-            result = random_.sample(ulist,int(modev))
+            res = random.sample(ulist,int(modev))
             if "L" in mode:
-                result = "\n".join(result)
+                res = "\n".join(res)
             elif "S" in mode:
-                result = " ".join(result)
+                res = " ".join(res)
             elif "D" in mode:
-                result = "".join(result)
+                res = "".join(res)
             else:
-                result = "\n".join(result)
+                res = "\n".join(res)
 
     elif "i" in mode:
         if len(ulist) < 2: raise Exception("err:rand:範囲指定が不完全")
@@ -98,23 +98,23 @@ def rand(arg,option="None"):
         if ulist==None: pass
         elif len(mode) > 1:
             modev = mode[mode.index("c")+1] 
-            result = random_.choices(ulist,k=int(modev))
+            res = random.choices(ulist,k=int(modev))
             if "L" in mode:
-                result = "\n".join(result)
+                res = "\n".join(res)
             elif "S" in mode:
-                result = " ".join(result)
+                res = " ".join(res)
             elif "D" in mode:
-                result = "".join(result)
+                res = "".join(res)
             else:
-                result = "\n".join(result)
+                res = "\n".join(res)
         else:
-            result = random_.choice(ulist)
+            res = random.choice(ulist)
     #else: result = "err:rand:無効なmodeです"
     
     if ulist==None:
         raise Exception("err:rand:選択肢の指定がありません")
     
-    return result
+    return res
 
 def imgedit(arg,option,url=None):  
     mode = option
