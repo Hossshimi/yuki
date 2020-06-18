@@ -49,7 +49,7 @@ class T(Transformer):
                         arg.append(self._tmp_res.pop(0))
                     else:
                         arg.append(t.children[0].value)
-        if (not arg) and not(cmd in ["lf","zwsp"]): arg.append(self._tmp_res.pop())
+        if (not arg) and not(cmd in ["version","lf","zwsp"]): arg.append(self._tmp_res.pop())
         elif not arg: arg = None
         try:
             if cmd == None: pass
