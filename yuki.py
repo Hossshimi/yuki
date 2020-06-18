@@ -28,7 +28,7 @@ class T(Transformer):
     def __init__(self):
         self._sentence_res = None
         self._chunk_res = []
-        self._tmp_res = None
+        self._tmp_res = []
         self.qflag = False
 
     def sentence(self,tree):
@@ -46,10 +46,11 @@ class T(Transformer):
             elif tr.data == "arg":
                 for t in tr.children:
                     if t == None:
-                        arg = self._sentence_res
+                        arg.append(self._tmp_res.pop(0))
                     else:
                         arg.append(t.children[0].value)
-        if not arg: arg = self._sentence_res
+        if (not arg) and not(cmd in ["lf","zwsp"]): arg.append(self._tmp_res.pop())
+        elif not arg: arg = None
         try:
             if cmd == None: pass
             elif (cmd == "imgedit") and ("u" in opt): 
@@ -63,18 +64,17 @@ class T(Transformer):
                 res = eval(f"func.replace(arg,opt)")
             else:
                 res = eval(f"func.{cmd}(arg,opt)")
-        except Exception as e: res = str(e)
-        if self._tmp_res:
-            self._sentence_res = self._tmp_res
-            self._tmp_res = res
-        else: self._tmp_res = res
+        except Exception as e:
+            res = str(e)
+        self._tmp_res.append(res)
 
     def subshell(self,tree):
         pass
     
     def script(self,tree):
         global result
-        result = self._tmp_res
+        if type(self._tmp_res[-1]) is int: result = 0
+        else: result = "".join(self._tmp_res)
 
 
 

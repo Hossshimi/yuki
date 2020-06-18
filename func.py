@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.2.0"
+VERSION = "yuki 2.2.1"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -23,7 +23,7 @@ var = []
 def version(*args):
     return VERSION
 
-def say(arg,option="None"):
+def say(arg,option=None):
     #if type(arg) is str:
     #    return arg
     if type(arg) is list:
@@ -33,14 +33,15 @@ def say(arg,option="None"):
     else:
         raise Exception("内容が・・・無いよう！ｗ")
 
-def textimg(arg,option="None"):
+def textimg(arg,option=None):
     global FONTPATH,FONTSIZE,COLOR
     #if type(arg) is str:
     #    text = arg
+    if not option: option = ""
     if type(arg) is list:
         text = "".join(arg)
     elif type(arg) is str:
-        text = "".join(arg)
+        text = arg
     else:
         raise Exception("err:textimg:引数の指定なし")
     if "b" in option:
