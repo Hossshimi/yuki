@@ -9,7 +9,7 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.2.2"
+VERSION = "yuki 2.2.3"
 
 FONTPATH = os.path.normpath(os.path.join(\
     os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
@@ -272,7 +272,7 @@ def zwsp(*args):
 def lf(*args):
     return "\n"
 
-def n2c(data,option="None"):
+def n2c(data,option=None):
     if not data:
         raise Exception("err:n2c:コードポイントの指定なし")
     if (type(data) is list) and (len(data)>1):
@@ -284,12 +284,12 @@ def n2c(data,option="None"):
     else: d = int(data,16)
     return chr(d)
 
-def insert(data,option="None",in_data="None"):
-    if (in_data == "None") or (in_data == ""):
+def insert(data,option=None,in_data=None):
+    if (in_data == None) or (in_data == ""):
         raise Exception("err:insert:対象文字列なし")
-    elif (data == "None") or (data == ""):
+    elif (data == None) or (data == ""):
         raise Exception("err:insert:挿入文字列の指定なし")
-    elif (option == "None") or (option == ""):
+    elif (option == None) or (option == ""):
         raise Exception("err:insert:挿入位置の指定なし")
     if type(data) is list:
         data = " ".join(data)
@@ -303,6 +303,9 @@ def insert(data,option="None",in_data="None"):
     else:
         raise Exception("err:insert:無効なインデックス指定")
     l = list(data)
-    l.insert(index,in_data[0])
+    l.insert(index,in_data)
     result = "".join(l)
     return result
+
+def count(arg,option=None):
+    return str(len(arg))

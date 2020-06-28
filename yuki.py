@@ -57,9 +57,9 @@ class T(Transformer):
                 media_url = tootdata["media_attachments"][0]["url"]
                 res = eval(f"func.imgedit(None,opt+media_url)")
             elif cmd == "insert":
-                res = eval(f"func.insert(arg,opt,self._tmp_res)")
+                res = eval(f"func.insert(arg,opt,self._tmp_res.pop(0))")
             elif (cmd == "replace") and (self._tmp_res):
-                res = eval(f"func.replace(arg,opt,self._tmp_res)")
+                res = eval(f"func.replace(arg,opt,self._tmp_res.pop(0))")
             elif cmd == "replace":
                 res = eval(f"func.replace(arg,opt)")
             else:
