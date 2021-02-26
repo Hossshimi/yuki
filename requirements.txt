@@ -4,7 +4,7 @@ opencv-python==4.1.0.25
 schedule==0.6.0
 wikipedia==1.4.0
 lark-parser==0.7.8
-aiohttp==3.5.4
+aiohttp==3.7.4
 asn1crypto==0.24.0
 astroid==1.6.4
 async-timeout==3.0.1
