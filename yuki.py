@@ -42,26 +42,39 @@ class T(Transformer):
             if tr.data == "command":
                 cmd = tr.children[0].children[0].value
             elif tr.data == "option":
-                opt = tr.children[0].children[0].value
+                #opt = tr.children[0].children[0].value
+                for t in tr.children:
+                    if t == None:
+                        opt.append(self._tmp_res.pop(0))
+                    else:
+                        opt.append(t.children[0].value)
             elif tr.data == "arg":
                 for t in tr.children:
                     if t == None:
                         arg.append(self._tmp_res.pop(0))
                     else:
                         arg.append(t.children[0].value)
-        if (not arg) and not(cmd in ["version","lf","zwsp"]): arg.append(self._tmp_res.pop())
+        if (not arg) and (cmd not in ["version","lf","zwsp","imgedit"]):
+            try:
+                eval(f"func.{cmd}")
+                arg.append(self._tmp_res.pop())
+            except:
+                raise Exception(f"存在しないコマンド '{cmd}'")
         elif not arg: arg = None
         try:
             if cmd == None: pass
-            elif (cmd == "imgedit") and ("u" in opt): 
+            elif (cmd == "imgedit") and ("u" in opt):
                 media_url = tootdata["media_attachments"][0]["url"]
-                res = eval(f"func.imgedit(None,opt+media_url)")
+                res = func.imgedit(None,opt,media_url)
             elif cmd == "insert":
-                res = eval(f"func.insert(arg,opt,self._tmp_res.pop(0))")
+                res = func.insert(arg,opt,self._tmp_res.pop(0))
             elif (cmd == "replace") and (self._tmp_res):
-                res = eval(f"func.replace(arg,opt,self._tmp_res.pop(0))")
+                res = func.replace(arg,opt,self._tmp_res.pop(0))
             elif cmd == "replace":
-                res = eval(f"func.replace(arg,opt)")
+                res = func.replace(arg,opt)
+            elif cmd == "find":
+                arg.append(self._tmp_res.pop(0))
+                res = func.find(arg,opt)
             else:
                 res = eval(f"func.{cmd}(arg,opt)")
         except Exception as e:
@@ -175,29 +188,29 @@ class MastodonStreamListener(StreamListener):
 
 
 
-def login():
-    mastodon = Mastodon(
-        client_id=os.environ.get("yuki_key"),
-        access_token=os.environ.get("yuki_token"),
-        client_secret=os.environ.get("yuki_secret"),
-        api_base_url = "https://kawaiuniv.work"
-    )
-    return mastodon
+#def login():
+#    mastodon = Mastodon(
+#        client_id=os.environ.get("yuki_key"),
+#        access_token=os.environ.get("yuki_token"),
+#        client_secret=os.environ.get("yuki_secret"),
+#        api_base_url = "https://kawaiuniv.work"
+#    )
+#    return mastodon
 
 
 
-def main():
-    global mastodon
-
-    schedule.every().day.at("15:02").do(anniv)
-
-    mastodon = login()
-    mastodon.status_post(status="@kawai ただいま！",visibility="direct")
-    # 起動時,開発にDMを送信
-
-    mastodon.stream_user(MastodonStreamListener(),run_async=False,reconnect_async=False)
-    # Streaming APIに接続,タグ"yuki_kawaiuniv"付きのtootを拾う
-    #mastodon.stream_hashtag("yuki_kawaiuniv",MastodonStreamListener(),run_async=False)
+#def main():
+#    global mastodon
+#
+#    schedule.every().day.at("15:02").do(anniv)
+#
+#    mastodon = login()
+#    mastodon.status_post(status="@kawai ただいま！",visibility="direct")
+#    # 起動時,開発にDMを送信
+#
+#    mastodon.stream_user(MastodonStreamListener(),run_async=False,reconnect_async=False)
+#    # Streaming APIに接続,タグ"yuki_kawaiuniv"付きのtootを拾う
+#    #mastodon.stream_hashtag("yuki_kawaiuniv",MastodonStreamListener(),run_async=False)
     
 
 

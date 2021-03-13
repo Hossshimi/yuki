@@ -9,10 +9,9 @@ import numpy
 import numpy.random as nprand
 import cv2
 
-VERSION = "yuki 2.2.3"
+VERSION = "yuki 2.2.4"
 
-FONTPATH = os.path.normpath(os.path.join(\
-    os.path.abspath(os.path.dirname(__file__)),"NotoSansCJKjp-Medium.otf"))
+FONTPATH = "NotoSansCJKjp-Medium.otf"
 #print(FONTPATH)
 FONTSIZE = 20
 COLOR = (255,255,255)
@@ -31,20 +30,18 @@ def say(arg,option=None):
     elif type(arg) is str:
         return arg
     else:
-        raise Exception("内容が・・・無いよう！ｗ")
+        raise Exception("func:say:内容が・・・無いよう！ｗ")
 
 def textimg(arg,option=None):
     global FONTPATH,FONTSIZE,COLOR
-    #if type(arg) is str:
-    #    text = arg
-    if not option: option = ""
+    if not option: option = " "
     if type(arg) is list:
         text = "".join(arg)
     elif type(arg) is str:
         text = arg
     else:
         raise Exception("err:textimg:引数の指定なし")
-    if "b" in option:
+    if "b" in option[0]:
         bgc_h_s = option[option.index("b")+1:option.index("b")+7]
         bgc = (int(bgc_h_s[:2],16),int(bgc_h_s[2:4],16),int(bgc_h_s[4:6],16))
     else: bgc = (0,0,0)
@@ -309,3 +306,22 @@ def insert(data,option=None,in_data=None):
 
 def count(arg,option=None):
     return str(len(arg))
+
+def find(arg,option=None):
+    if len(arg) != 2:
+        raise Exception("func:find:引数の数が不正")
+    if option:
+        if not option.isnumeric:
+            raise Exception("func:find:不正なoption")
+    find_res = list(re.finditer(arg[0],arg[1]))
+    num = int(option) if option[0] == "-" else int(option)+1
+    if find_res[0] == None:
+        res = ""
+    elif not option:
+        res = str(find_res[0].start())
+    else:
+        try:
+            res = str(find_res[num].start())
+        except IndexError:
+            raise Exception("func:find:不正なインデックス指定")
+    return res

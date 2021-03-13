@@ -1,6 +1,4 @@
-script : chunk
-
-chunk : [(sentence pipe)+] sentence
+script : [(sentence pipe)+] sentence
 
 sentence : command [" "+ option] [(" "+ arg)+] [/\n+/]
 
@@ -13,6 +11,6 @@ arg : chars [(" " chars)+]
 
 subshell : "(" script ")" [/\n+/]
 
-chars : /[^\+\|\s\(\)\-']+/[/\n+/]
+chars : /[^\+\|\s\(\)']+/[/\n+/]
 allchars : /[^']+/[/\n+/]
 pipe : [" "+] "|" [" "+]
