@@ -1,6 +1,6 @@
 Mastodon.py==1.4.6
 numpy==1.17.0
-opencv-python==4.1.0.25
+opencv-python==4.1.1.26
 schedule==0.6.0
 wikipedia==1.4.0
 lark-parser==0.7.8
